@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -29,13 +30,17 @@ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsSubmitting(true);
 
-  const companyName = (document.getElementById("company-name") as HTMLInputElement).value;
+  const businessName = (document.getElementById("business-name") as HTMLInputElement).value;
+  const businessName2 = (document.getElementById("business-name-2") as HTMLInputElement).value;
+  const amount = (document.getElementById("amount") as HTMLInputElement).value;
+  const issueDate = (document.getElementById("issue-date") as HTMLInputElement).value;
   const expiryDate = (document.getElementById("expiry-date") as HTMLInputElement).value;
+  const notes = (document.getElementById("notes") as HTMLInputElement).value;
 
-  const response = await fetch("/api/create-event", {
+  const response = await fetch("/api/log-coi", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ companyName, expiryDate }),
+    body: JSON.stringify({ businessName, businessName2, amount, issueDate, expiryDate, notes }),
   });
 
   if (response.ok) {
@@ -88,14 +93,38 @@ const handleSubmit = async (e: React.FormEvent) => {
 
              {/* Recipient Name */}
                         <div className="space-y-2">
-              <Label htmlFor="company-name">Company Name</Label>
-              <Input id="company-name" type="text" required />
+              <Label htmlFor="busienss-name">Business Name</Label>
+              <Input id="business-name" type="text" required />
             </div>
 
-            {/* Issue Date */}
+            {/* Recipient Name */}
+            <div className="space-y-2">
+              <Label htmlFor="business-name-2">Business Name 2</Label>
+              <Input id="business-name-2" type="text" />
+            </div>
+
+            {/* Amount */}
+                        <div className="space-y-2">
+              <Label htmlFor="amount">Amount</Label>
+              <Input id="amount" type="number" step="1.0" min="0" required />
+            </div>
+
+             {/* Issue Date */}
+                        <div className="space-y-2">
+              <Label htmlFor="issue-date">Issue Date</Label>
+              <Input id="issue-date" type="date" required />
+            </div>
+
+            {/* Expiry Date */}
             <div className="space-y-2">
               <Label htmlFor="expiry-date">Expiry Date</Label>
               <Input id="expiry-date" type="date" required />
+            </div>
+
+                        {/* Textarea */}
+                        <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea id="notes"/>
             </div>
 
 
