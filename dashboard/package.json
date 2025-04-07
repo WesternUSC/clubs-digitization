@@ -52,6 +52,7 @@
     "lucide-react": "^0.454.0",
     "multer": "^1.4.5-lts.1",
     "next": "14.2.16",
+    "next-auth": "^4.24.11",
     "next-themes": "^0.4.4",
     "react": "^18",
     "react-day-picker": "latest",
@@ -66,6 +67,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/formidable": "^3.4.5",
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",

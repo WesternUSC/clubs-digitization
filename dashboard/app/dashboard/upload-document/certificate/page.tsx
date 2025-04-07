@@ -24,11 +24,18 @@ import { Loader2 } from "lucide-react"
 export default function CertificatePage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [file, setFile] = useState<File | null>(null)
+  const [file, setFile] = useState<File>()
 
 const handleSubmit = async (e: React.FormEvent) => {
+
   e.preventDefault();
   setIsSubmitting(true);
+
+  if (!file) {
+    alert("Please select a file to upload.");
+    setIsSubmitting(false);
+    return;
+  }
 
   const businessName = (document.getElementById("business-name") as HTMLInputElement).value;
   const businessName2 = (document.getElementById("business-name-2") as HTMLInputElement).value;
@@ -37,10 +44,23 @@ const handleSubmit = async (e: React.FormEvent) => {
   const expiryDate = (document.getElementById("expiry-date") as HTMLInputElement).value;
   const notes = (document.getElementById("notes") as HTMLInputElement).value;
 
+
+  const formData = new FormData();
+  
+  formData.append("businessName", businessName);
+  formData.append("businessName2", businessName2);
+  formData.append("amount", amount);
+  formData.append("issueDate", issueDate);
+  formData.append("expiryDate", expiryDate);
+  formData.append("notes", notes);
+
+  formData.append("file", file);
+
+
   const response = await fetch("/api/log-coi", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ businessName, businessName2, amount, issueDate, expiryDate, notes }),
+    //headers: { "Content-Type": "application/json" },
+    body: formData,
   });
 
   if (response.ok) {
@@ -87,7 +107,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             {/* File Upload */}
             <div className="space-y-2">
               <Label htmlFor="document-upload">Upload Certificate Document</Label>
-              <Input id="document-upload" type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} required />
+              <Input id="document-upload" type="file" onChange={(e) => setFile(e.target.files?.[0])} required />
               {file && <p className="text-sm text-muted-foreground">Selected file: {file.name}</p>}
             </div>
 
