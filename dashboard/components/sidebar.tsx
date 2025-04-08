@@ -7,6 +7,8 @@ import { ChevronDown, ChevronRight, FileText, Menu, Settings, X } from "lucide-r
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { useSession } from "next-auth/react"
+// import { SessionProvider } from "next-auth/react";
 
 interface SidebarProps {
   open: boolean
@@ -14,6 +16,18 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open, setOpen }: SidebarProps) {
+
+  // const { data: session} = useSession()
+  // const user = session?.user
+
+  // const initals = user
+  //   ? user.name
+  //     ?.split(' ')
+  //     .map((n) => n[0])
+  //     .join('')
+  //     .toUpperCase()
+  //   : 'JD'
+
   const pathname = usePathname()
   const router = useRouter()
   const [documentsOpen, setDocumentsOpen] = useState(true)
@@ -30,6 +44,8 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   }
 
   return (
+
+    
     <>
       {/* Mobile sidebar overlay */}
       {open && (
@@ -168,6 +184,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         <span className="sr-only">Open sidebar</span>
       </Button>
     </>
+    
   )
 }
 
