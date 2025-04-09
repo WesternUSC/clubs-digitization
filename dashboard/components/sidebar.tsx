@@ -3,11 +3,11 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { ChevronDown, ChevronRight, FileText, Menu, Settings, X } from "lucide-react"
+import { ChevronDown, ChevronRight, FileText, LogOut, Menu, Settings, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 // import { SessionProvider } from "next-auth/react";
 
 interface SidebarProps {
@@ -17,16 +17,16 @@ interface SidebarProps {
 
 export function Sidebar({ open, setOpen }: SidebarProps) {
 
-  // const { data: session} = useSession()
-  // const user = session?.user
+  const { data: session } = useSession()
+  const user = session?.user
 
-  // const initals = user
-  //   ? user.name
-  //     ?.split(' ')
-  //     .map((n) => n[0])
-  //     .join('')
-  //     .toUpperCase()
-  //   : 'JD'
+  const initials = user
+    ? user.name
+      ?.split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+    : 'JD'
 
   const pathname = usePathname()
   const router = useRouter()
@@ -43,9 +43,13 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
     router.push("/dashboard")
   }
 
+  const logout = () => {
+    signOut({ callbackUrl: '/' });
+  }
+
   return (
 
-    
+
     <>
       {/* Mobile sidebar overlay */}
       {open && (
@@ -158,15 +162,34 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         </div>
 
         {/* Sidebar footer */}
-        <div className="border-t border-sidebar-border p-4">
+        <div className="border-t border-sidebar-border p-4 space-y-4">
+          {/* Logout button */}
+          <button
+            onClick={logout}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors w-full",
+              "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+            )}
+          >
+            <LogOut className="h-5 w-5" />
+            {open && <span>Logout</span>}
+          </button>
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center">
-              <span className="text-xs font-medium">JD</span>
-            </div>
+            {user?.image ? (
+              <img
+                src={user.image}
+                alt={user.name || "Profile"}
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center">
+                <span className="text-xs font-medium">{initials}</span>
+              </div>
+            )}
             {open && (
               <div className="overflow-hidden">
-                <p className="text-sm font-medium truncate">John Doe</p>
-                <p className="text-xs text-sidebar-foreground/70 truncate">john@example.com</p>
+                <p className="text-sm font-medium truncate">{user?.name || "John Doe"}</p>
+                <p className="text-xs text-sidebar-foreground/70 truncate">{user?.email || "john@example.com"}</p>
               </div>
             )}
           </div>
@@ -184,7 +207,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         <span className="sr-only">Open sidebar</span>
       </Button>
     </>
-    
+
   )
 }
 
