@@ -31,14 +31,19 @@ export async function POST(request: NextResponse) {
     let emailSubject = null;
     let emailBody = null;
     let sendDate = null;
+    let reminderDate = null;
 
 
-    if(sendEmail){
+    if (sendEmail) {
       vendorEmail = formData.get("vendorEmail");
       copyEmails = formData.get("copyEmails");
       emailSubject = formData.get("vendorEmail");
       emailBody = formData.get("emailBody");
       sendDate = formData.get("sendDate");
+    }
+
+    if (calendarReminder){
+      reminderDate = formData.get("reminderDate");
     }
 
 
@@ -62,6 +67,9 @@ export async function POST(request: NextResponse) {
 
     if (uploadToDrive) {
 
+      // Get the current year
+      const currentYear = new Date().getFullYear().toString();
+
       // Google Drive Integration
       //converting the file to a buffer: 
       const arrayBuffer = await file.arrayBuffer();
@@ -73,21 +81,77 @@ export async function POST(request: NextResponse) {
 
       const driveFolderID = process.env.COI_DRIVE_FOLDER_ID as string
 
-      // Upload file to Google Drive
-      const driveResponse = await drive.files.create({
-        requestBody: {
-          name: file.name,
-          parents: [driveFolderID], // Replace with actual folder ID
-        },
-        media: {
-          mimeType: file.type,
-          body: readable,
-        },
-      });
+      // Function to check if a folder with the current year exists
+      async function getOrCreateYearFolder() {
+        // List folders in the parent folder
+        const res = await drive.files.list({
+          q: `'${driveFolderID}' in parents and mimeType = 'application/vnd.google-apps.folder'`,
+          fields: 'files(id, name)',
+        });
 
-      console.log("File uploaded to Google Drive with ID:", driveResponse.data.id);
+        // Look for a folder with the current year
+        const existingFolder = res.data.files?.find((folder) => folder.name === currentYear);
 
-      driveFileUrl = `https://drive.google.com/file/d/${driveResponse.data.id}/view`;
+        if (existingFolder) {
+          // If the folder exists, return its ID
+          return existingFolder.id;
+        } else {
+          // If the folder doesn't exist, create a new one
+          const folderMetadata = {
+            name: currentYear,
+            mimeType: 'application/vnd.google-apps.folder',
+            parents: [driveFolderID], // Parent folder is the root folder
+          };
+          const folderRes = await drive.files.create({
+            requestBody: folderMetadata,
+          });
+
+          return folderRes.data.id;
+        }
+      }
+
+      // Get or create the folder for the current year
+      const yearFolderID = await getOrCreateYearFolder();
+
+      if (!yearFolderID) {
+        console.error('Year folder creation or retrieval failed');
+        return;
+      }
+
+
+      // Generate the new file name
+      const fileName = `COI_${businessName}_${issueDate}`;
+
+      // Ensure that the folder ID and file name are correct and valid
+      if (!fileName || !yearFolderID) {
+        console.error('Invalid file name or folder ID');
+        return;
+      }
+
+      try {
+        // Upload the file to the year-specific folder
+        const driveResponse = await drive.files.create({
+          requestBody: {
+            name: fileName, // New file name format
+            parents: [yearFolderID], // Use the folder ID for the current year
+          },
+          media: {
+            mimeType: file.type,
+            body: readable,
+          },
+        });
+
+        console.log("File uploaded to Google Drive with ID:", driveResponse.data.id);
+
+        // Create the file URL
+        driveFileUrl = `https://drive.google.com/file/d/${driveResponse.data.id}/view`;
+
+        // Log or store the file URL if needed
+        console.log("Drive file URL:", driveFileUrl);
+      } catch (error) {
+        console.error('Error uploading the file to Google Drive:', error);
+      }
+
 
     }
 
@@ -98,7 +162,7 @@ export async function POST(request: NextResponse) {
     if (logToSheets) {
 
       // Google Sheets Integration
-      
+
       const spreadsheetId = process.env.COI_SPREADSHEET_ID;
       const range = "Sheet1!A2:B";
       const getResponse = await sheets.spreadsheets.values.get({ spreadsheetId, range });
@@ -127,9 +191,9 @@ export async function POST(request: NextResponse) {
       const calendar = google.calendar({ version: "v3", auth });
       const calendarId = process.env.CLUBS_CALENDAR_ID;
       const event = {
-        summary: businessName as string,
-        start: { date: expiryDate as string },
-        end: { date: expiryDate as string },
+        summary: `COI Expiring: ${businessName as string}`,
+        start: { date: reminderDate as string },
+        end: { date: reminderDate as string },
         description: `Notes: ${notes}\n\nFile: ${driveFileUrl}\n\nView Full Details: ${spreadsheetUrl}`,
       };
 
@@ -142,7 +206,7 @@ export async function POST(request: NextResponse) {
     }
 
 
-    if(sendEmail){
+    if (sendEmail) {
 
       const spreadsheetId = process.env.AUTO_EMAIL_SPREADSHEET_ID
 

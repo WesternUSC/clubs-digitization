@@ -28,6 +28,12 @@ export default function CertificatePage() {
   const [file, setFile] = useState<File>()
   const [expiryDate, setExpiryDate] = useState("")
 
+  // New state for uncontrolled inputs converted to controlled
+  const [businessName, setBusinessName] = useState("")
+  const [businessName2, setBusinessName2] = useState("")
+  const [amount, setAmount] = useState("")
+  const [issueDate, setIssueDate] = useState("")
+  const [notes, setNotes] = useState("")
 
   // Action checkboxes state
   const [calendarReminder, setCalendarReminder] = useState(true)
@@ -39,87 +45,77 @@ export default function CertificatePage() {
   useEffect(() => {
     if (expiryDate) {
       setSendDate(expiryDate)
+      setReminderDate(expiryDate)
     }
   }, [expiryDate])
 
+  // Calendar reminder states
+  const [reminderDate, setReminderDate] = useState("")
+
   // Email fields state
   const [vendorEmail, setVendorEmail] = useState("")
-  const [copyEmails, setCopyEmails] = useState("anna.pavicic@westernusc.ca")
+  const [copyEmails, setCopyEmails] = useState("shari.bumpus@westernusc.ca")
   const [emailSubject, setEmailSubject] = useState("Lorem Ipsum")
   const [emailBody, setEmailBody] = useState(
-    "This is an automated reminder that your certificate is about to expire. Please contact us to renew your certificate before the expiration date to avoid any service interruptions.",
+    "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.",
   )
   const [sendDate, setSendDate] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
-
-    e.preventDefault();
-    setIsSubmitting(true);
+    e.preventDefault()
+    setIsSubmitting(true)
 
     if (!file) {
-      alert("Please select a file to upload.");
-      setIsSubmitting(false);
-      return;
+      alert("Please select a file to upload.")
+      setIsSubmitting(false)
+      return
     }
 
-    const businessName = (document.getElementById("business-name") as HTMLInputElement).value;
-    const businessName2 = (document.getElementById("business-name-2") as HTMLInputElement).value;
-    const amount = (document.getElementById("amount") as HTMLInputElement).value;
-    const issueDate = (document.getElementById("issue-date") as HTMLInputElement).value;
-    const expiryDate = (document.getElementById("expiry-date") as HTMLInputElement).value;
-    const notes = (document.getElementById("notes") as HTMLInputElement).value;
+    // Use state values instead of document.getElementById
+    const formData = new FormData()
 
+    formData.append("businessName", businessName)
+    formData.append("businessName2", businessName2)
+    formData.append("amount", amount)
+    formData.append("issueDate", issueDate)
+    formData.append("expiryDate", expiryDate)
+    formData.append("notes", notes)
 
-
-
-    const formData = new FormData();
-
-    formData.append("businessName", businessName);
-    formData.append("businessName2", businessName2);
-    formData.append("amount", amount);
-    formData.append("issueDate", issueDate);
-    formData.append("expiryDate", expiryDate);
-    formData.append("notes", notes);
-
-    formData.append("file", file);
+    formData.append("file", file)
 
     // Append the checkbox states to the form data
-    formData.append("calendarReminder", calendarReminder.toString());
-    formData.append("logToSheets", logToSheets.toString());
-    formData.append("uploadToDrive", uploadToDrive.toString());
-    formData.append("sendEmail", sendEmail.toString());
+    formData.append("calendarReminder", calendarReminder.toString())
+    formData.append("logToSheets", logToSheets.toString())
+    formData.append("uploadToDrive", uploadToDrive.toString())
+    formData.append("sendEmail", sendEmail.toString())
 
-    if(sendEmail){
-      const vendorEmail = (document.getElementById("vendor-email") as HTMLInputElement).value;
-      const copyEmails = (document.getElementById("copy-emails") as HTMLInputElement).value;
-      const emailSubject = (document.getElementById("email-subject") as HTMLInputElement).value;
-      const emailBody = (document.getElementById("email-body") as HTMLInputElement).value;
-      const sendDate = (document.getElementById("send-date") as HTMLInputElement).value;
-
-      formData.append("vendorEmail", vendorEmail.toString());
-      formData.append("copyEmails", copyEmails.toString());
-      formData.append("emailSubject", emailSubject.toString());
-      formData.append("emailBody", emailBody.toString());
-      formData.append("sendDate", sendDate.toString());
+    if (sendEmail) {
+      formData.append("vendorEmail", vendorEmail)
+      formData.append("copyEmails", copyEmails)
+      formData.append("emailSubject", emailSubject)
+      formData.append("emailBody", emailBody)
+      formData.append("sendDate", sendDate)
     }
 
+    if (calendarReminder) {
+      formData.append("reminderDate", reminderDate)
+    }
 
     const response = await fetch("/api/log-coi", {
       method: "POST",
       //headers: { "Content-Type": "application/json" },
       body: formData,
-    });
+    })
 
     if (response.ok) {
-      alert("Event created successfully!");
+      alert("Event created successfully!")
     } else {
-      alert("Failed to create event.");
+      alert("Failed to create event.")
     }
 
-    setIsSubmitting(false);
-    router.push(`/dashboard/upload-document/certificate/success`);
-  };
-
+    setIsSubmitting(false)
+    router.push(`/dashboard/upload-document/certificate/success`)
+  }
 
   return (
     <div className="space-y-6">
@@ -141,7 +137,9 @@ export default function CertificatePage() {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Upload Certificate of Insurance</h1>
-        <p className="text-muted-foreground">Upload a certificate document and fill in the required information</p>
+        <p className="text-muted-foreground">
+          Upload a certificate document and fill in the required information
+        </p>
       </div>
 
       {/* Form Card */}
@@ -154,32 +152,62 @@ export default function CertificatePage() {
             {/* File Upload */}
             <div className="space-y-2">
               <Label htmlFor="document-upload">Upload Certificate Document</Label>
-              <Input id="document-upload" type="file" onChange={(e) => setFile(e.target.files?.[0])} required />
+              <Input
+                id="document-upload"
+                type="file"
+                onChange={(e) => setFile(e.target.files?.[0])}
+                required
+              />
               {file && <p className="text-sm text-muted-foreground">Selected file: {file.name}</p>}
             </div>
 
             {/* Recipient Name */}
             <div className="space-y-2">
-              <Label htmlFor="busienss-name">Business Name</Label>
-              <Input id="business-name" type="text" required />
+              <Label htmlFor="business-name">Business Name</Label>
+              <Input
+                id="business-name"
+                type="text"
+                required
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+              />
             </div>
 
-            {/* Recipient Name */}
+            {/* Recipient Name 2 */}
             <div className="space-y-2">
               <Label htmlFor="business-name-2">Business Name 2</Label>
-              <Input id="business-name-2" type="text" />
+              <Input
+                id="business-name-2"
+                type="text"
+                value={businessName2}
+                onChange={(e) => setBusinessName2(e.target.value)}
+              />
             </div>
 
             {/* Amount */}
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
-              <Input id="amount" type="number" step="1.0" min="0" required />
+              <Input
+                id="amount"
+                type="number"
+                step="1.0"
+                min="0"
+                required
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
             </div>
 
             {/* Issue Date */}
             <div className="space-y-2">
               <Label htmlFor="issue-date">Issue Date</Label>
-              <Input id="issue-date" type="date" required />
+              <Input
+                id="issue-date"
+                type="date"
+                required
+                value={issueDate}
+                onChange={(e) => setIssueDate(e.target.value)}
+              />
             </div>
 
             {/* Expiry Date */}
@@ -194,10 +222,14 @@ export default function CertificatePage() {
               />
             </div>
 
-            {/* Textarea */}
+            {/* Notes */}
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
-              <Textarea id="notes" />
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
             </div>
 
             {/* Actions Section */}
@@ -213,16 +245,34 @@ export default function CertificatePage() {
                     onCheckedChange={(checked) => setCalendarReminder(checked as boolean)}
                   />
                   <div className="grid gap-1.5 leading-none">
-                    <Label htmlFor="calendar-reminder">Set Google Calendar reminder for COI expiry.</Label>
+                    <Label htmlFor="calendar-reminder">
+                      Set Google Calendar reminder for COI expiry.
+                    </Label>
                   </div>
                 </div>
+
+                {/* Conditional Calendar Reminder Fields */}
+                {calendarReminder && (
+                  <div className="ml-6 mt-2 space-y-3 border-l-2 pl-4 border-primary/30">
+                    <div className="space-y-2">
+                      <Label htmlFor="reminder-date">Reminder Date</Label>
+                      <Input
+                        id="reminder-date"
+                        type="date"
+                        value={reminderDate}
+                        onChange={(e) => setReminderDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* Google Sheets */}
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     id="log-sheets"
-                    checked={logToSheets}
-                    onCheckedChange={(checked) => setLogToSheets(checked as boolean)}
+                    checked={true}
+                  // checked={logToSheets}
+                  // onCheckedChange={(checked) => setLogToSheets(checked as boolean)}
                   />
                   <div className="grid gap-1.5 leading-none">
                     <Label htmlFor="log-sheets">Log COI details in Google Sheets.</Label>
@@ -249,7 +299,9 @@ export default function CertificatePage() {
                     onCheckedChange={(checked) => setSendEmail(checked as boolean)}
                   />
                   <div className="grid gap-1.5 leading-none">
-                    <Label htmlFor="send-email">Automatically send email to vendor on COI expiry date via Gmail.</Label>
+                    <Label htmlFor="send-email">
+                      Automatically send email to vendor on COI expiry date via Gmail.
+                    </Label>
                   </div>
                 </div>
 
@@ -311,7 +363,6 @@ export default function CertificatePage() {
               </div>
             </div>
 
-
             {/* Submit Button */}
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
@@ -320,7 +371,7 @@ export default function CertificatePage() {
                   Processing...
                 </>
               ) : (
-                "Submit Document"
+                "Upload Document"
               )}
             </Button>
           </form>
@@ -329,4 +380,3 @@ export default function CertificatePage() {
     </div>
   )
 }
-

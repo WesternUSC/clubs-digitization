@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { ChevronDown, ChevronRight, FileText, LogOut, Menu, Settings, X } from "lucide-react"
+import { ChevronDown, ChevronRight, Search, FileText, LogOut, Menu, Settings, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -145,6 +145,20 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 </div>
               )}
             </div>
+
+            {/* Find Document */}
+            <Link
+              href="/dashboard/find-document"
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                pathname === "/dashboard/find-document"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+              )}
+            >
+              <Search className="h-5 w-5" />
+              {open && <span>Find Document</span>}
+            </Link>
 
             <Link
               href="/dashboard/settings"

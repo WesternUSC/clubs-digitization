@@ -16,7 +16,7 @@ export default function DashboardLayout({
     <div className="flex h-screen overflow-hidden">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       <main className="flex-1 overflow-y-auto bg-muted/40 p-4">
-        <div className="mx-auto max-w-6xl">{children}</div>
+        <div className="mx-auto max-w-6xl pb-12">{children}</div>
       </main>
     </div>
   )
