@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useSession } from "next-auth/react"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Breadcrumb,
@@ -41,6 +43,11 @@ export default function CertificatePage() {
   const [uploadToDrive, setUploadToDrive] = useState(true)
   const [sendEmail, setSendEmail] = useState(true)
 
+  const [documentCategory, setDocumentCategory] = useState<string>("")
+
+
+  const { data: session } = useSession()
+
   // Update send date when expiry date changes
   useEffect(() => {
     if (expiryDate) {
@@ -60,6 +67,7 @@ export default function CertificatePage() {
     "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.",
   )
   const [sendDate, setSendDate] = useState("")
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -88,6 +96,8 @@ export default function CertificatePage() {
     formData.append("logToSheets", logToSheets.toString())
     formData.append("uploadToDrive", uploadToDrive.toString())
     formData.append("sendEmail", sendEmail.toString())
+    formData.append("documentCategory", documentCategory)
+
 
     if (sendEmail) {
       formData.append("vendorEmail", vendorEmail)
@@ -99,6 +109,10 @@ export default function CertificatePage() {
 
     if (calendarReminder) {
       formData.append("reminderDate", reminderDate)
+    }
+
+    if (session?.user?.name) {
+      formData.append("submittedBy", session.user.name)
     }
 
     const response = await fetch("/api/log-coi", {
@@ -161,6 +175,22 @@ export default function CertificatePage() {
               {file && <p className="text-sm text-muted-foreground">Selected file: {file.name}</p>}
             </div>
 
+            {/* Document Type Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Document Category</label>
+              <Select value={documentCategory} onValueChange={setDocumentCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select document type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Catering/Hospitality">Catering/Hospitality</SelectItem>
+                  <SelectItem value="Venue">Venue</SelectItem>
+                  <SelectItem value="Transportation">Transportation</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Recipient Name */}
             <div className="space-y-2">
               <Label htmlFor="business-name">Business Name</Label>
@@ -184,19 +214,28 @@ export default function CertificatePage() {
               />
             </div>
 
-            {/* Amount */}
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
-              <Input
-                id="amount"
-                type="number"
-                step="1.0"
-                min="0"
-                required
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </div>
+  <Label htmlFor="amount">Amount</Label>
+  <div className="relative">
+    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+    <Input
+      id="amount"
+      type="text"
+      inputMode="decimal"
+      pattern="^\d*\.?\d*$"
+      required
+      className="pl-7" // add left padding for the dollar sign
+      value={amount}
+      onChange={(e) => {
+        const val = e.target.value;
+        if (/^\d*\.?\d*$/.test(val)) {
+          setAmount(val);
+        }
+      }}
+    />
+  </div>
+</div>
+
 
             {/* Issue Date */}
             <div className="space-y-2">

@@ -4,6 +4,7 @@ import credentials from "@/google-service-account.json";
 import { Readable } from "stream";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { format } from "date-fns";
 
 
 export async function POST(request: NextResponse) {
@@ -17,7 +18,7 @@ export async function POST(request: NextResponse) {
     const businessName = formData.get("businessName");
     const businessName2 = formData.get("businessName2");
     const amount = formData.get("amount");
-    const issueDate = formData.get("issueDate");
+    const issueDate = formData.get("issueDate") as string;
     const expiryDate = formData.get("expiryDate");
     const notes = formData.get("notes");
     const file: File | null = formData.get("file") as unknown as File;
@@ -25,6 +26,15 @@ export async function POST(request: NextResponse) {
     const logToSheets = formData.get("logToSheets") === "true";
     const uploadToDrive = formData.get("uploadToDrive") === "true";
     const sendEmail = formData.get("sendEmail") === "true";
+    const documentCategory = formData.get("documentCategory");
+    const submittedBy = formData.get("submittedBy")
+
+    const currentTime = format(new Date(), 'MMMM dd, yyyy HH:mm:ss');
+
+    //Generates random id for data entry
+    const logId = Date.now().toString();
+
+
 
     let vendorEmail = null;
     let copyEmails = null;
@@ -37,12 +47,12 @@ export async function POST(request: NextResponse) {
     if (sendEmail) {
       vendorEmail = formData.get("vendorEmail");
       copyEmails = formData.get("copyEmails");
-      emailSubject = formData.get("vendorEmail");
+      emailSubject = formData.get("emailSubject");
       emailBody = formData.get("emailBody");
       sendDate = formData.get("sendDate");
     }
 
-    if (calendarReminder){
+    if (calendarReminder) {
       reminderDate = formData.get("reminderDate");
     }
 
@@ -58,17 +68,16 @@ export async function POST(request: NextResponse) {
       scopes: [
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/drive",
       ],
     });
 
     const drive = google.drive({ version: "v3", auth });
 
+    // For the year, extract it from the issueDate instead of the current date.
+    const yearFromIssueDate = new Date(issueDate).getFullYear().toString();
 
     if (uploadToDrive) {
-
-      // Get the current year
-      const currentYear = new Date().getFullYear().toString();
 
       // Google Drive Integration
       //converting the file to a buffer: 
@@ -79,18 +88,53 @@ export async function POST(request: NextResponse) {
       readable.push(buffer);
       readable.push(null);
 
-      const driveFolderID = process.env.COI_DRIVE_FOLDER_ID as string
+      const driveFolderID = process.env.COI_GENERAL_DRIVE_FOLDER_ID as string
+
+      // STEP 1: Find the document category folder (which is assumed to always exist)
+      async function getDocumentCategoryFolder() {
+
+        // const response = await drive.files.list({
+        //   q: `'${driveFolderID}' in parents and trashed = false`,
+        //   fields: 'files(id, name, mimeType)',
+        //   supportsAllDrives: true,
+        //   includeItemsFromAllDrives: true
+        // });
+      
+        // const files = response?.data?.files || [];
+        // files.forEach(file => {
+        //   console.log(`${file.name} (${file.mimeType})`);
+        // });
+
+        const res = await drive.files.list({
+          q: `'${driveFolderID}' in parents and mimeType = 'application/vnd.google-apps.folder' and name = '${documentCategory}'`,
+          fields: 'files(id, name)',
+        });
+
+        const categoryFolder = res.data.files?.[0];
+        if (!categoryFolder) {
+          console.error(`Document category folder (${documentCategory}) not found.`);
+          return null;
+        }
+        return categoryFolder.id;
+      }
+
+      const categoryFolderID = await getDocumentCategoryFolder();
+      if (!categoryFolderID) {
+        console.error('Could not retrieve the document category folder.');
+        return;
+      }
+    
 
       // Function to check if a folder with the current year exists
       async function getOrCreateYearFolder() {
         // List folders in the parent folder
         const res = await drive.files.list({
-          q: `'${driveFolderID}' in parents and mimeType = 'application/vnd.google-apps.folder'`,
+          q: `'${categoryFolderID}' in parents and mimeType = 'application/vnd.google-apps.folder'`,
           fields: 'files(id, name)',
         });
 
         // Look for a folder with the current year
-        const existingFolder = res.data.files?.find((folder) => folder.name === currentYear);
+        const existingFolder = res.data.files?.find((folder) => folder.name === yearFromIssueDate);
 
         if (existingFolder) {
           // If the folder exists, return its ID
@@ -98,9 +142,9 @@ export async function POST(request: NextResponse) {
         } else {
           // If the folder doesn't exist, create a new one
           const folderMetadata = {
-            name: currentYear,
+            name: yearFromIssueDate,
             mimeType: 'application/vnd.google-apps.folder',
-            parents: [driveFolderID], // Parent folder is the root folder
+            parents: [categoryFolderID as string], // Parent folder is the root folder
           };
           const folderRes = await drive.files.create({
             requestBody: folderMetadata,
@@ -120,7 +164,7 @@ export async function POST(request: NextResponse) {
 
 
       // Generate the new file name
-      const fileName = `COI_${businessName}_${issueDate}`;
+      const fileName = `COI_G_${businessName}_${issueDate}_${logId}`;
 
       // Ensure that the folder ID and file name are correct and valid
       if (!fileName || !yearFolderID) {
@@ -153,6 +197,7 @@ export async function POST(request: NextResponse) {
       }
 
 
+
     }
 
 
@@ -168,7 +213,7 @@ export async function POST(request: NextResponse) {
       const getResponse = await sheets.spreadsheets.values.get({ spreadsheetId, range });
       const rows = getResponse.data.values || [];
       const nextRow = rows.length + 2;
-      const values = [[businessName, businessName2, amount, issueDate, expiryDate, notes, driveFileUrl]];
+      const values = [[businessName, businessName2, amount, issueDate, expiryDate, notes, driveFileUrl, documentCategory, submittedBy, currentTime, logId]];
 
       await sheets.spreadsheets.values.append({
         spreadsheetId,
@@ -194,7 +239,7 @@ export async function POST(request: NextResponse) {
         summary: `COI Expiring: ${businessName as string}`,
         start: { date: reminderDate as string },
         end: { date: reminderDate as string },
-        description: `Notes: ${notes}\n\nFile: ${driveFileUrl}\n\nView Full Details: ${spreadsheetUrl}`,
+        description: `Notes: ${notes}\n\nFile: ${driveFileUrl}\n\nView Full Details: ${spreadsheetUrl}\n\nLog ID: ${logId}`,
       };
 
       await calendar.events.insert({
@@ -214,7 +259,7 @@ export async function POST(request: NextResponse) {
       const getResponse = await sheets.spreadsheets.values.get({ spreadsheetId, range });
       const rows = getResponse.data.values || [];
       const nextRow = rows.length + 2;
-      const values = [[sendDate, vendorEmail, copyEmails, emailSubject, emailBody]];
+      const values = [[sendDate, vendorEmail, copyEmails, emailSubject, emailBody, "", "", logId]];
 
       await sheets.spreadsheets.values.append({
         spreadsheetId,

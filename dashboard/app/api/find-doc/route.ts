@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     let fullRows: any[] = [];
     if (matchRowNumbers.length > 0) {
       // Assume full rows span columns A to Z. Adjust if necessary.
-      const rowRanges = matchRowNumbers.map((rowNumber) => `Sheet1!A${rowNumber}:Z${rowNumber}`);
+      const rowRanges = matchRowNumbers.map((rowNumber) => `Sheet1!A${rowNumber}:G${rowNumber}`);
       const batchResponse = await sheets.spreadsheets.values.batchGet({
         spreadsheetId,
         ranges: rowRanges,
