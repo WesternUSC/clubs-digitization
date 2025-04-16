@@ -59,6 +59,7 @@ export async function POST(request: NextResponse) {
 
     let driveFileUrl = "";
     let spreadsheetUrl = "";
+    let autoEmailSheetUrl = "";
 
 
     // Authenticate with Google API
@@ -229,6 +230,7 @@ export async function POST(request: NextResponse) {
     }
 
 
+    let reminderUrl = null;
 
     if (calendarReminder) {
 
@@ -242,12 +244,16 @@ export async function POST(request: NextResponse) {
         description: `Notes: ${notes}\n\nFile: ${driveFileUrl}\n\nView Full Details: ${spreadsheetUrl}\n\nLog ID: ${logId}`,
       };
 
-      await calendar.events.insert({
+      const response = await calendar.events.insert({
         calendarId,
         requestBody: event,
       });
 
+      reminderUrl = response.data.htmlLink; // This is the URL to the calendar event
+
+
       console.log("Event created successfully in Calendar.");
+      console.log("Calendar event link:", reminderUrl);
     }
 
 
@@ -268,13 +274,18 @@ export async function POST(request: NextResponse) {
         requestBody: { values },
       });
 
+      autoEmailSheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit?gid=0#gid=0&range=A${nextRow}`;
+
+
       console.log("Data logged successfully in Google Sheets.");
     }
 
 
     return NextResponse.json({
-      message: "Event created, file uploaded, and logged successfully!",
-      fileUrl: driveFileUrl,
+      googleDrive: driveFileUrl,
+      googleCalendar: reminderUrl,
+      googleSheets: spreadsheetUrl,
+      scheduledEmail: autoEmailSheetUrl,
     });
 
 

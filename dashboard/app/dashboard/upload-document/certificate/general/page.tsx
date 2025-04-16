@@ -136,17 +136,22 @@ export default function CertificatePage() {
       body: formData,
     })
 
-    // Handle success or failure response from the server
     if (response.ok) {
-      alert("Event created successfully!")
+      const data = await response.json();
+    
+      // Save the flag and links in sessionStorage
+      sessionStorage.setItem("fromUpload", "true");
+      sessionStorage.setItem("externalLinks", JSON.stringify(data));
+    
+      // Now stop the loading
+      setIsSubmitting(false);
+    
+      // Redirect to success page
+      router.push(`/dashboard/upload-document/certificate/general/success`);
     } else {
-      alert("Failed to create event.")
+      setIsSubmitting(false); // Only stop loading here if it failed
+      alert("Failed to create event.");
     }
-
-    // Stop the submission loading indicator
-    setIsSubmitting(false)
-    // Navigate the user to a success page after submission
-    router.push(`/dashboard/upload-document/certificate/success`)
   }
 
   // Return the JSX structure for the certificate upload page
