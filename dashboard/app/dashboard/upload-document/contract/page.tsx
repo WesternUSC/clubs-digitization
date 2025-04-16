@@ -36,7 +36,7 @@ export default function ContractPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-screen">
       {/* Breadcrumb */}
       <Breadcrumb className="mb-6">
         <BreadcrumbList>

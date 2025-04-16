@@ -1,6 +1,14 @@
 import Link from "next/link"
 import { FileText, FileSpreadsheet, FileCheck, FileCheckIcon as FileCertificate } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 export default function DashboardPage() {
   const documentTypes = [
@@ -32,6 +40,16 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+            {/* Breadcrumb Navigation */}
+            <Breadcrumb className="mb-6">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+            <BreadcrumbPage>Upload Document</BreadcrumbPage>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Upload Document</h1>
         <p className="text-muted-foreground">Select a document type to upload and process</p>
@@ -46,7 +64,7 @@ export default function DashboardPage() {
                   <doc.icon className="h-6 w-6 text-primary" />
                 </div>
                 <CardTitle className="text-xl">{doc.title}</CardTitle>
-                <CardDescription>{doc.description}</CardDescription>
+                {/* <CardDescription>{doc.description}</CardDescription> */}
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">

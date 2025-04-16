@@ -208,7 +208,7 @@ export async function POST(request: NextResponse) {
 
       // Google Sheets Integration
 
-      const spreadsheetId = process.env.COI_SPREADSHEET_ID;
+      const spreadsheetId = process.env.COI_GENERAL_SPREADSHEET_ID;
       const range = "Sheet1!A2:B";
       const getResponse = await sheets.spreadsheets.values.get({ spreadsheetId, range });
       const rows = getResponse.data.values || [];

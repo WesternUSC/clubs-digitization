@@ -19,7 +19,7 @@ interface DocumentMapping {
 // and a sub-mapping for allowed search criteria.
 const searchMappings: { [key: string]: DocumentMapping } = {
   certificate: {
-    sheetId: process.env.COI_SPREADSHEET_ID,
+    sheetId: process.env.COI_GENERAL_SPREADSHEET_ID,
     criteria: {
       "business-name": { column: "A", dataType: "string" },
       "business-name-2": { column: "B", dataType: "string" },
