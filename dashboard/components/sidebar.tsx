@@ -33,10 +33,10 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const [documentsOpen, setDocumentsOpen] = useState(true)
 
   const documentTypes = [
-    { name: "Certificate of Insurance", path: "/dashboard/upload-document/certificate" },
-    { name: "Purchase Order", path: "/dashboard/upload-document/purchase-order" },
-    { name: "Sponsorship", path: "/dashboard/upload-document/contract" },
-    { name: "Charity Letter", path: "/dashboard/upload-document/report" },
+    { name: "Certificate of Insurance", path: "/dashboard/manage-document/certificate" },
+    { name: "Purchase Order", path: "/dashboard/manage-document/purchase-order" },
+    { name: "Sponsorship", path: "/dashboard/manage-document/contract" },
+    { name: "Charity Letter", path: "/dashboard/manage-document/report" },
   ]
 
   const handleUploadDocumentClick = () => {
@@ -95,7 +95,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 <button
                   className={cn(
                     "flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    pathname === "/dashboard" || pathname.includes("/dashboard/upload-document")
+                    pathname === "/dashboard" || pathname.includes("/dashboard/manage-document")
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
                   )}

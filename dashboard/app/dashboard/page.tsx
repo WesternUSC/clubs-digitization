@@ -16,25 +16,25 @@ export default function DashboardPage() {
       title: "Certificate of Insurance",
       description: "Upload and verify certificate documents",
       icon: FileCertificate,
-      href: "/dashboard/upload-document/certificate",
+      href: "/dashboard/manage-document/certificate",
     },
     {
       title: "Purchase Order",
       description: "Upload and process invoice documents",
       icon: FileText,
-      href: "/dashboard/upload-document/purchase-order",
+      href: "/dashboard/manage-document/purchase-order",
     },
     {
       title: "Sponsorship",
       description: "Upload and manage contract documents",
       icon: FileSpreadsheet,
-      href: "/dashboard/upload-document/contract",
+      href: "/dashboard/manage-document/contract",
     },
     {
       title: "Charity Letter",
       description: "Upload and analyze report documents",
       icon: FileCheck,
-      href: "/dashboard/upload-document/report",
+      href: "/dashboard/manage-document/report",
     },
   ]
 
@@ -45,13 +45,13 @@ export default function DashboardPage() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-            <BreadcrumbPage>Upload Document</BreadcrumbPage>
+            <BreadcrumbPage>Manage Documents</BreadcrumbPage>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Upload Document</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Manage Documents</h1>
         <p className="text-muted-foreground">Select a document type to upload and process</p>
       </div>
 

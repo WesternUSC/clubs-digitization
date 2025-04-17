@@ -46,13 +46,10 @@ export default function CertificatePage() {
   const [notes, setNotes] = useState("")
 
   // State for action checkboxes to determine which actions should be performed
-  const [calendarReminder, setCalendarReminder] = useState(true)
   const [logToSheets, setLogToSheets] = useState(true)
   const [uploadToDrive, setUploadToDrive] = useState(true)
-  const [sendEmail, setSendEmail] = useState(true)
 
-  // State to manage document category selection from the dropdown
-  const [documentCategory, setDocumentCategory] = useState<string>("")
+
 
   // Destructure the session from next-auth hook for user session details
   const { data: session } = useSession()
@@ -60,7 +57,6 @@ export default function CertificatePage() {
   // When the expiry date changes, update both email send date and calendar reminder date
   useEffect(() => {
     if (expiryDate) {
-      setSendDate(expiryDate)
       setReminderDate(expiryDate)
     }
   }, [expiryDate])
@@ -68,15 +64,7 @@ export default function CertificatePage() {
   // State for calendar reminder date separate from expiry date
   const [reminderDate, setReminderDate] = useState("")
 
-  // States for email details that will be used if sendEmail is enabled
-  const [vendorEmail, setVendorEmail] = useState("")
-  const [copyEmails, setCopyEmails] = useState("shari.bumpus@westernusc.ca")
-  const [emailSubject, setEmailSubject] = useState("Lorem Ipsum")
-  const [emailBody, setEmailBody] = useState(
-    "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.",
-  )
-  // State for send date for the email, initially updated from expiry date
-  const [sendDate, setSendDate] = useState("")
+
 
   // Event handler for form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,25 +94,11 @@ export default function CertificatePage() {
     formData.append("file", file)
 
     // Append checkbox state values indicating actions to perform
-    formData.append("calendarReminder", calendarReminder.toString())
     formData.append("logToSheets", logToSheets.toString())
     formData.append("uploadToDrive", uploadToDrive.toString())
-    formData.append("sendEmail", sendEmail.toString())
-    formData.append("documentCategory", documentCategory)
 
-    // Append email-related fields if sendEmail action is enabled
-    if (sendEmail) {
-      formData.append("vendorEmail", vendorEmail)
-      formData.append("copyEmails", copyEmails)
-      formData.append("emailSubject", emailSubject)
-      formData.append("emailBody", emailBody)
-      formData.append("sendDate", sendDate)
-    }
 
-    // Append reminder date if calendar reminder is enabled
-    if (calendarReminder) {
-      formData.append("reminderDate", reminderDate)
-    }
+
 
     // Append the name of the logged-in user if available from the session
     if (session?.user?.name) {
@@ -138,17 +112,22 @@ export default function CertificatePage() {
       body: formData,
     })
 
-    // Handle success or failure response from the server
     if (response.ok) {
-      alert("Event created successfully!")
+      const data = await response.json();
+    
+      // Save the flag and links in sessionStorage
+      sessionStorage.setItem("fromUpload", "true");
+      sessionStorage.setItem("externalLinks", JSON.stringify(data));
+    
+      // Now stop the loading
+      setIsSubmitting(false);
+    
+      // Redirect to success page
+      router.push(`/dashboard/manage-document/success`);
     } else {
-      alert("Failed to create event.")
+      setIsSubmitting(false); // Only stop loading here if it failed
+      alert("Failed to create event.");
     }
-
-    // Stop the submission loading indicator
-    setIsSubmitting(false)
-    // Navigate the user to a success page after submission
-    router.push(`/dashboard/upload-document/certificate/success`)
   }
 
   // Return the JSX structure for the certificate upload page
@@ -165,7 +144,7 @@ export default function CertificatePage() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/dashboard/upload-document/certificate">Certificate of Insurance</Link>
+              <Link href="/dashboard/manage-document/certificate">Certificate of Insurance</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -204,22 +183,6 @@ export default function CertificatePage() {
               {file && <p className="text-sm text-muted-foreground">Selected file: {file.name}</p>}
             </div>
 
-            {/* Document Category Selection */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Document Category</label>
-              <Select value={documentCategory} onValueChange={setDocumentCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select document type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Catering/Hospitality">Catering/Hospitality</SelectItem>
-                  <SelectItem value="Venue">Venue</SelectItem>
-                  <SelectItem value="Transportation">Transportation</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* Business Name Input Field */}
             <div className="space-y-2">
               <Label htmlFor="business-name">Business Name</Label>
@@ -250,7 +213,7 @@ export default function CertificatePage() {
                 id="club-name-"
                 type="text"
                 value={clubName}
-                onChange={(e) => setBusinessName2(e.target.value)}
+                onChange={(e) => setClubName(e.target.value)}
               />
             </div>
 
@@ -317,34 +280,6 @@ export default function CertificatePage() {
               <h3 className="font-medium text-lg">Actions:</h3>
 
               <div className="space-y-3">
-                {/* Google Calendar Reminder Checkbox */}
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="calendar-reminder"
-                    checked={calendarReminder}
-                    onCheckedChange={(checked) => setCalendarReminder(checked as boolean)}
-                  />
-                  <div className="grid gap-1.5 leading-none">
-                    <Label htmlFor="calendar-reminder">
-                      Set Google Calendar reminder for COI expiry.
-                    </Label>
-                  </div>
-                </div>
-
-                {/* Conditional fields for calendar reminder */}
-                {calendarReminder && (
-                  <div className="ml-6 mt-2 space-y-3 border-l-2 pl-4 border-primary/30">
-                    <div className="space-y-2">
-                      <Label htmlFor="reminder-date">Reminder Date</Label>
-                      <Input
-                        id="reminder-date"
-                        type="date"
-                        value={reminderDate}
-                        onChange={(e) => setReminderDate(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
 
                 {/* Google Sheets Action Checkbox */}
                 <div className="flex items-start space-x-2">
@@ -372,80 +307,6 @@ export default function CertificatePage() {
                   </div>
                 </div>
 
-                {/* Gmail Email Action Checkbox */}
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="send-email"
-                    checked={sendEmail}
-                    onCheckedChange={(checked) => setSendEmail(checked as boolean)}
-                  />
-                  <div className="grid gap-1.5 leading-none">
-                    <Label htmlFor="send-email">
-                      Automatically send email to vendor on COI expiry date via Gmail.
-                    </Label>
-                  </div>
-                </div>
-
-                {/* Conditionally render email fields if sendEmail is enabled */}
-                {sendEmail && (
-                  <div className="ml-6 mt-2 space-y-3 border-l-2 pl-4 border-primary/30">
-                    {/* Vendor Email Field */}
-                    <div className="space-y-2">
-                      <Label htmlFor="vendor-email">Send to (Vendor Email)</Label>
-                      <Input
-                        id="vendor-email"
-                        type="email"
-                        value={vendorEmail}
-                        onChange={(e) => setVendorEmail(e.target.value)}
-                        placeholder="vendor@example.com"
-                      />
-                    </div>
-
-                    {/* Copy Emails Field */}
-                    <div className="space-y-2">
-                      <Label htmlFor="copy-emails">Copy Emails</Label>
-                      <Input
-                        id="copy-emails"
-                        type="text"
-                        value={copyEmails}
-                        onChange={(e) => setCopyEmails(e.target.value)}
-                      />
-                    </div>
-
-                    {/* Email Subject Field */}
-                    <div className="space-y-2">
-                      <Label htmlFor="email-subject">Subject</Label>
-                      <Input
-                        id="email-subject"
-                        type="text"
-                        value={emailSubject}
-                        onChange={(e) => setEmailSubject(e.target.value)}
-                      />
-                    </div>
-
-                    {/* Email Body Field */}
-                    <div className="space-y-2">
-                      <Label htmlFor="email-body">Body</Label>
-                      <Textarea
-                        id="email-body"
-                        rows={4}
-                        value={emailBody}
-                        onChange={(e) => setEmailBody(e.target.value)}
-                      />
-                    </div>
-
-                    {/* Send Date Field */}
-                    <div className="space-y-2">
-                      <Label htmlFor="send-date">Send Date</Label>
-                      <Input
-                        id="send-date"
-                        type="date"
-                        value={sendDate}
-                        onChange={(e) => setSendDate(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 

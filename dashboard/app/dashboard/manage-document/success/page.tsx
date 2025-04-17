@@ -53,7 +53,7 @@ export default function SuccessPage() {
         </div>
         <h1 className="text-3xl font-bold tracking-tight">Document Uploaded Successfully!</h1>
         <p className="text-muted-foreground text-lg">
-          Your Invoice has been successfully uploaded and processed.
+          Your document has been successfully uploaded and processed.
         </p>
 
         {/* External Links Cards */}

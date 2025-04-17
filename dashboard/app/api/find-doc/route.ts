@@ -1,4 +1,3 @@
-// File: /app/api/find-doc/route.ts
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import credentials from '@/google-service-account.json';
@@ -6,6 +5,7 @@ import credentials from '@/google-service-account.json';
 interface Criterion {
   column: string;
   dataType: string;
+  provide: boolean; // Whether to include this column in the response
 }
 
 interface DocumentMapping {
@@ -13,53 +13,40 @@ interface DocumentMapping {
   criteria: {
     [key: string]: Criterion;
   };
+  criteriaOrder: string[]; // Order in which the columns appear in the row
+  driveLinkColumn: string; // Specify the column letter that contains the drive link
 }
 
-// Mapping: for each document type, include its spreadsheet ID (via env variables)
-// and a sub-mapping for allowed search criteria.
+// Mapping for each document type, including the driveLinkColumn.
+// For certificates, suppose the drive link is in column G.
 const searchMappings: { [key: string]: DocumentMapping } = {
   certificate: {
     sheetId: process.env.COI_GENERAL_SPREADSHEET_ID,
     criteria: {
-      "business-name": { column: "A", dataType: "string" },
-      "business-name-2": { column: "B", dataType: "string" },
-      "amount": { column: "C", dataType: "number" },
-      "issue-date": { column: "D", dataType: "date" },
-      "expiry-date": { column: "E", dataType: "date" },
+      "business-name": { column: "A", dataType: "string", provide: true },
+      "business-name-2": { column: "B", dataType: "string", provide: true },
+      "amount": { column: "C", dataType: "number", provide: true },
+      "issue-date": { column: "D", dataType: "date", provide: true },
+      "expiry-date": { column: "E", dataType: "date", provide: true },
+      "category": { column: "H", dataType: "string", provide: true },
+      "notes": { column: "F", dataType: "string", provide: true },
+      "logged-by":{ column: "I", dataType: "string", provide: true },
+      "logged-time":{ column: "J", dataType: "date", provide: true },
     },
+    criteriaOrder: ["business-name", "business-name-2", "amount", "issue-date", "expiry-date", "category", "notes", "logged-by", "logged-time"],
+    driveLinkColumn: "G", // For certificates, assume the drive link is in column G.
   },
-  invoice: {
-    sheetId: process.env.INVOICE_SPREADSHEET_ID,
-    criteria: {
-      "invoice-number": { column: "A", dataType: "string" },
-      "vendor": { column: "B", dataType: "string" },
-      "amount": { column: "C", dataType: "number" },
-      "date": { column: "D", dataType: "date" },
-    },
-  },
-  contract: {
-    sheetId: process.env.CONTRACT_SPREADSHEET_ID,
-    criteria: {
-      "contract-id": { column: "A", dataType: "string" },
-      "party-name": { column: "B", dataType: "string" },
-      "start-date": { column: "C", dataType: "date" },
-      "end-date": { column: "D", dataType: "date" },
-    },
-  },
-  report: {
-    sheetId: process.env.REPORT_SPREADSHEET_ID,
-    criteria: {
-      "report-title": { column: "A", dataType: "string" },
-      "author": { column: "B", dataType: "string" },
-      "department": { column: "C", dataType: "string" },
-      "date": { column: "D", dataType: "date" },
-    },
-  },
+  // You can add other document mappings here with their own driveLinkColumn.
 };
+
+// Helper: Converts a column letter (like "A", "G", etc.) to a zero-based index.
+function columnLetterToIndex(letter: string): number {
+  return letter.toUpperCase().charCodeAt(0) - "A".charCodeAt(0);
+}
 
 export async function POST(request: Request) {
   try {
-    // Unpack incoming form data
+    // Unpack incoming form data.
     const formData = await request.formData();
     const documentType = formData.get("documentType")?.toString();
     const searchCriteria = formData.get("searchCriteria")?.toString();
@@ -69,13 +56,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
     }
 
-    // Look up the mapping based on document type and allowed criteria.
+    // Look up the mapping based on document type.
     const mapping = searchMappings[documentType];
     if (!mapping) {
       return NextResponse.json({ error: "Invalid document type" }, { status: 400 });
     }
     
-    // Use a type assertion to access the criterion.
+    // Access the specific criterion.
     const criteriaMapping = mapping.criteria[searchCriteria as keyof typeof mapping.criteria];
     if (!criteriaMapping) {
       return NextResponse.json({ error: "Invalid search criteria" }, { status: 400 });
@@ -97,24 +84,20 @@ export async function POST(request: Request) {
 
     const sheets = google.sheets({ version: "v4", auth });
 
-    // Retrieve the target column’s data from “Sheet1” (adjust if needed).
+    // Retrieve data for the column that is being searched.
     const columnRange = `Sheet1!${criteriaMapping.column}:${criteriaMapping.column}`;
     const columnResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: columnRange,
     });
-
     const columnValues: string[][] = columnResponse.data.values || [];
 
-    // Assume first row is a header, so data starts at row 2.
+    // Assume first row is a header; data starts at row 2.
     const dataRows = columnValues.slice(1);
     const matchRowNumbers: number[] = [];
-
     dataRows.forEach((row, index) => {
       const cellValue = row[0];
-      // Check for a match (case-insensitive)
       if (cellValue && cellValue.toString().toLowerCase() === searchQuery.toLowerCase()) {
-        // Add 2: one for header offset and for zero-based index.
         matchRowNumbers.push(index + 2);
       }
     });
@@ -123,8 +106,10 @@ export async function POST(request: Request) {
 
     let fullRows: any[] = [];
     if (matchRowNumbers.length > 0) {
-      // Assume full rows span columns A to Z. Adjust if necessary.
-      const rowRanges = matchRowNumbers.map((rowNumber) => `Sheet1!A${rowNumber}:G${rowNumber}`);
+      // Fetch a wide range. Adjust the range as needed.
+      const rowRanges = matchRowNumbers.map(
+        (rowNumber) => `Sheet1!A${rowNumber}:Z${rowNumber}`
+      );
       const batchResponse = await sheets.spreadsheets.values.batchGet({
         spreadsheetId,
         ranges: rowRanges,
@@ -134,19 +119,44 @@ export async function POST(request: Request) {
 
     console.log("Full row data for matches:", fullRows);
 
-    // Remove the "Notes" column (6th element; index 5) from each row.
-    const processedRows = fullRows.map((row) => {
-      if (row.length > 5) {
-        return [...row.slice(0, 5), ...row.slice(6)];
+    // Build dynamic headers based on mapping.
+    const dynamicHeaders = mapping.criteriaOrder.reduce((acc: string[], key) => {
+      if (mapping.criteria[key]?.provide) {
+        // Transform the key into a title: e.g., "business-name" => "Business Name".
+        const header = key
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+        acc.push(header);
       }
-      return row;
-    });
-    
-    console.log("Processed row data (notes removed):", processedRows);
+      return acc;
+    }, []);
+    // Append a header for the drive link (or "Actions").
+    dynamicHeaders.push("Actions");
 
-    // Return the processed rows under "results".
+    // Process each row.
+    const processedRows = fullRows.map((row) => {
+      const newRow: any[] = [];
+      // For each key in criteriaOrder that has provide: true, extract the corresponding cell.
+      mapping.criteriaOrder.forEach((key) => {
+        if (mapping.criteria[key]?.provide) {
+          const cellIndex = columnLetterToIndex(mapping.criteria[key].column);
+          newRow.push(row[cellIndex] || "");
+        }
+      });
+      // Extract the drive link from the specified driveLinkColumn.
+      const driveIdx = columnLetterToIndex(mapping.driveLinkColumn);
+      const driveLinkValue = row[driveIdx] || "";
+      // Append the drive link value.
+      newRow.push(driveLinkValue);
+      return newRow;
+    });
+
+    console.log("Processed row data (filtered by mapping):", processedRows);
+
     return NextResponse.json({
       results: processedRows,
+      headers: dynamicHeaders,
     });
   } catch (error) {
     console.error("Error processing search:", error);

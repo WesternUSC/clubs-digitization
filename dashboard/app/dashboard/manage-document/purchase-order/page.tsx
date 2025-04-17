@@ -13,17 +13,23 @@ import {
 export default function CertifcateDashboardPage() {
   const documentTypes = [
     {
-      title: "General",
+      title: "New Purchase Order",
       description: "Upload and verify certificate documents",
       icon: FileCertificate,
-      href: "/dashboard/upload-document/certificate/general",
+      href: "/dashboard/upload-document/purchase-order/new",
     },
     {
-      title: "Additionally Insured",
+      title: "Attach Invoice",
       description: "Upload and verify certificate documents",
       icon: FileCertificate,
-      href: "/dashboard/upload-document/certificate/additionally-insured",
+      href: "/dashboard/upload-document/purchase-order/attach-invoice",
     },
+    {
+        title: "Set Payment Status",
+        description: "Upload and verify certificate documents",
+        icon: FileCertificate,
+        href: "/dashboard/upload-document/purchase-order/update-status",
+      },
   ]
 
   return (
@@ -40,7 +46,7 @@ export default function CertifcateDashboardPage() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-            <BreadcrumbPage>Certificate of Insurance</BreadcrumbPage>
+            <BreadcrumbPage>Purchase Order</BreadcrumbPage>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
@@ -48,7 +54,7 @@ export default function CertifcateDashboardPage() {
 
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Upload Certificate of Insurance</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Upload Purchase Order</h1>
         <p className="text-muted-foreground">Select a document type to upload and process</p>
       </div>
 

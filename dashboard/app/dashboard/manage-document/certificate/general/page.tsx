@@ -147,7 +147,7 @@ export default function CertificatePage() {
       setIsSubmitting(false);
     
       // Redirect to success page
-      router.push(`/dashboard/upload-document/certificate/general/success`);
+      router.push(`/dashboard/manage-document/success`);
     } else {
       setIsSubmitting(false); // Only stop loading here if it failed
       alert("Failed to create event.");
@@ -168,7 +168,7 @@ export default function CertificatePage() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/dashboard/upload-document/certificate">Certificate of Insurance</Link>
+              <Link href="/dashboard/manage-document/certificate">Certificate of Insurance</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
