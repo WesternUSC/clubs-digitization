@@ -16,23 +16,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { documentAttributes } from '@/data/documentAttributes';
 
-// Define search criteria options for certificates.
-const searchCriteriaOptions = {
-  certificate: [
-    { value: 'business-name', label: 'Business Name' },
-    { value: 'business-name-2', label: 'Business Name 2' },
-    { value: 'amount', label: 'Amount' },
-    { value: 'issue-date', label: 'Issue Date' },
-    { value: 'expiry-date', label: 'Expiry Date' },
-    { value: 'category', label: "Category" },
-  ],
-};
 
-type DocType = keyof typeof searchCriteriaOptions;
+type DocType = keyof typeof documentAttributes;
 
-export default function FindDocumentPage() {
-  const [documentType] = useState<DocType>('certificate');
+export default function FindGeneralCOIPage() {
+  const [documentType] = useState<DocType>('generalCOI');
   const [searchCriteria, setSearchCriteria] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -42,7 +32,7 @@ export default function FindDocumentPage() {
   // Determine placeholder text safely
   const selectedOption =
     searchCriteria
-      ? searchCriteriaOptions[documentType].find(o => o.value === searchCriteria)
+      ? documentAttributes[documentType].find(o => o.value === searchCriteria)
       : null;
   const placeholder = selectedOption
     ? `Enter ${selectedOption.label.toLowerCase()}`
@@ -74,7 +64,7 @@ export default function FindDocumentPage() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/dashboard">Upload Document</Link>
+              <Link href="/dashboard">Manage Documents</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -85,13 +75,13 @@ export default function FindDocumentPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Find COI</BreadcrumbPage>
+            <BreadcrumbPage>Find General COI</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Find Document</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Find General COI</h1>
         <p className="text-muted-foreground">Search for certificates in the system</p>
       </div>
 
@@ -106,7 +96,7 @@ export default function FindDocumentPage() {
                 <SelectValue placeholder="Select search criteria" />
               </SelectTrigger>
               <SelectContent>
-                {searchCriteriaOptions.certificate.map(opt => (
+                {documentAttributes.generalCOI.map(opt => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
                   </SelectItem>

@@ -40,12 +40,12 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-            {/* Breadcrumb Navigation */}
-            <Breadcrumb className="mb-6">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-            <BreadcrumbPage>Manage Documents</BreadcrumbPage>
+              <BreadcrumbPage>Manage Documents</BreadcrumbPage>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>

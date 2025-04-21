@@ -2,39 +2,8 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import credentials from '@/google-service-account.json';
+import { documentMappings } from '@/data/documentMappings';
 
-interface FieldDef {
-  key: string;      // e.g. "business-name"
-  column: string;   // e.g. "A"
-  dataType: string; // e.g. "string" | "number" | "date"
-}
-
-interface DocumentMapping {
-  sheetId: string;
-  fields: FieldDef[];      // columns to return, in order
-  driveLinkColumn: string; // letter of the drive link column
-}
-
-// Mapping for each document type
-const searchMappings: Record<string, DocumentMapping> = {
-  certificate: {
-    sheetId: process.env.COI_GENERAL_SPREADSHEET_ID!,
-    fields: [
-      { key: 'business-name', column: 'A', dataType: 'string' },
-      { key: 'business-name-2', column: 'B', dataType: 'string' },
-      { key: 'amount', column: 'C', dataType: 'number' },
-      { key: 'issue-date', column: 'D', dataType: 'date' },
-      { key: 'expiry-date', column: 'E', dataType: 'date' },
-      { key: 'category', column: 'H', dataType: 'string' },
-      { key: 'notes', column: 'F', dataType: 'string' },
-      { key: 'logged-by', column: 'I', dataType: 'string' },
-      { key: 'logged-time', column: 'J', dataType: 'date' },
-      { key: 'log-id', column: 'K', dataType: 'string' },
-    ],
-    driveLinkColumn: 'G',
-  },
-  // add other doc types here...
-};
 
 // Helper: convert A -> 0, B -> 1, etc.
 function columnLetterToIndex(letter: string): number {
@@ -52,7 +21,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     }
 
-    const mapping = searchMappings[documentType];
+    const mapping = documentMappings[documentType];
     if (!mapping) {
       return NextResponse.json({ error: 'Invalid document type' }, { status: 400 });
     }

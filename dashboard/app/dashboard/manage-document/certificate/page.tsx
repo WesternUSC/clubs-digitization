@@ -64,7 +64,7 @@ export default function CertifcateDashboardPage() {
                 <BreadcrumbList>
                     <BreadcrumbItem>
                         <BreadcrumbLink asChild>
-                            <Link href="/dashboard">Upload Document</Link>
+                            <Link href="/dashboard">Manage Documents</Link>
                         </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
