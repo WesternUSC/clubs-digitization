@@ -34,7 +34,7 @@ export default function DashboardPage() {
       title: "Charity Letter",
       description: "Upload and analyze report documents",
       icon: FileCheck,
-      href: "/dashboard/manage-document/report",
+      href: "/dashboard/manage-document/charity-letter",
     },
   ]
 

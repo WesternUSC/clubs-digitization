@@ -17,7 +17,7 @@ export default function CertifcateDashboardPage() {
             title: "Find General COI",
             description: "Search for an existing certificate of insurance",
             icon: Search, // imported from lucide-react
-            href: "/dashboard/manage-document/certificate/find-coi",
+            href: "/dashboard/manage-document/certificate/find-gen-coi",
             bgColor: "bg-blue-100",
             iconColor: "text-blue-600",
         },
@@ -25,7 +25,7 @@ export default function CertifcateDashboardPage() {
             title: "Find Additionally Insured COI",
             description: "Search for an existing certificate of insurance",
             icon: Search, // imported from lucide-react
-            href: "/dashboard/manage-document/certificate/find-coi",
+            href: "/dashboard/manage-document/certificate/find-ai-coi",
             bgColor: "bg-blue-100",
             iconColor: "text-blue-600",
         },
@@ -46,14 +46,14 @@ export default function CertifcateDashboardPage() {
             iconColor: "text-green-600",
         },
         // New card for Editing a COI:
-        {
-            title: "Edit COI",
-            description: "Modify an existing certificate of insurance",
-            icon: Edit, // imported from lucide-react
-            href: "/dashboard/manage-document",
-            bgColor: "bg-amber-100",
-            iconColor: "text-amber-600",
-        },
+        // {
+        //     title: "Edit COI",
+        //     description: "Modify an existing certificate of insurance",
+        //     icon: Edit, // imported from lucide-react
+        //     href: "/dashboard/manage-document",
+        //     bgColor: "bg-amber-100",
+        //     iconColor: "text-amber-600",
+        // },
     ]
 
     return (

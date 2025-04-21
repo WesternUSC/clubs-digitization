@@ -26,16 +26,16 @@ export const documentMappings: Record<string, DocumentMapping> = {
       fields: [
         { key: 'business-name', column: 'A', dataType: 'string' },
         { key: 'business-name-2', column: 'B', dataType: 'string' },
-        { key: 'amount', column: 'C', dataType: 'number' },
-        { key: 'issue-date', column: 'D', dataType: 'date' },
-        { key: 'expiry-date', column: 'E', dataType: 'date' },
-        { key: 'category', column: 'H', dataType: 'string' },
-        { key: 'notes', column: 'F', dataType: 'string' },
+        { key: 'club-name', column: 'C', dataType: 'string' },
+        { key: 'amount', column: 'D', dataType: 'number' },
+        { key: 'issue-date', column: 'E', dataType: 'date' },
+        { key: 'expiry-date', column: 'F', dataType: 'date' },
+        { key: 'notes', column: 'G', dataType: 'string' },
         { key: 'logged-by', column: 'I', dataType: 'string' },
         { key: 'logged-time', column: 'J', dataType: 'date' },
         { key: 'log-id', column: 'K', dataType: 'string' },
       ],
-      driveLinkColumn: 'G',
+      driveLinkColumn: 'H',
     }, 
 
 };
