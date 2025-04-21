@@ -37,5 +37,21 @@ export const documentMappings: Record<string, DocumentMapping> = {
       ],
       driveLinkColumn: 'H',
     }, 
+    charityLetter: {
+        sheetId: process.env.CHARITY_LETTER_SPREADSHEET_ID!,
+        fields: [
+          { key: 'charity-name', column: 'A', dataType: 'string' },
+          { key: 'charity-number', column: 'B', dataType: 'number' },
+          { key: 'club-name', column: 'C', dataType: 'string' },
+          { key: 'event-name', column: 'D', dataType: 'string' },
+          { key: 'amount', column: 'E', dataType: 'number' },
+          { key: 'issue-date', column: 'F', dataType: 'date' },
+          { key: 'notes', column: 'G', dataType: 'string' },
+          { key: 'logged-by', column: 'I', dataType: 'string' },
+          { key: 'logged-time', column: 'J', dataType: 'date' },
+          { key: 'log-id', column: 'K', dataType: 'string' },
+        ],
+        driveLinkColumn: 'H',
+      }, 
 
 };

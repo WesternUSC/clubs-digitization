@@ -128,6 +128,20 @@ export default function FindDocument({ documentType, title, subtitle }: FindDocu
                                         </div>
                                     </div>
                                 )}
+                                {selectedOption.dataType === 'number' && (
+                                    <Input
+                                        type="text"
+                                        inputMode="decimal"
+                                        pattern="^\\d*\\.?\\d*$"
+                                        placeholder="Enter number"
+                                        value={searchQuery}
+                                        onChange={e => {
+                                            if (/^\d*\.?\d*$/.test(e.target.value)) {
+                                                setSearchQuery(e.target.value);
+                                            }
+                                        }}
+                                    />
+                                )}
 
                                 {/* 3) Submit button */}
                                 <Button
