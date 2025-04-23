@@ -92,5 +92,27 @@ export const documentMappings: Record<string, DocumentMapping> = {
         driveLinkColumn: 'J',
     },
 
+    sponsorship: {
+        sheetId: process.env.SPONSORSHIP_SPREADSHEET_ID!,
+        fields: [
+            { key: 'log-id', column: 'K', dataType: 'string' },
+            { key: 'sponsor-name', column: 'A', dataType: 'string' },
+            { key: 'club-name', column: 'B', dataType: 'string' },
+            { key: 'issue-date', column: 'C', dataType: 'date' },
+            { key: 'amount', column: 'D', dataType: 'number' },
+            { key: 'method-of-payment', column: 'E', dataType: 'string' },
+            { key: 'notes', column: 'F', dataType: 'string' },
+            { key: 'category', column: 'H', dataType: 'string' },
+            { key: 'logged-by', column: 'I', dataType: 'string' },
+            { key: 'logged-time', column: 'J', dataType: 'date' },
+            { key: 'contract-uploaded-by', column: 'L', dataType: 'string', display: false },
+            { key: 'contract-upload-time', column: 'M', dataType: 'string', display: false },
+            { key: 'finance-uploaded-by', column: 'N', dataType: 'string', display: false },
+            { key: 'finance-upload-time', column: 'O', dataType: 'string', display: false },
+
+        ],
+        driveLinkColumn: 'G',
+    },
+
 
 };

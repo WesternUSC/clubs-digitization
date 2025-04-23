@@ -8,7 +8,7 @@ export interface SearchCriteriaOption {
 }
 
 // 2) Your doc‑type keys
-export type DocType = 'generalCOI' | 'additionallyInsuredCOI'| 'charityLetter' | 'contract' | 'purchaseOrder'; // keep this in sync
+export type DocType = 'generalCOI' | 'additionallyInsuredCOI'| 'charityLetter' | 'contract' | 'purchaseOrder' | 'sponsorship'; // keep this in sync
 
 // 3) Export your map with dataType on each entry
 export const searchCriteriaOptions: Record<DocType, SearchCriteriaOption[]> = {
@@ -61,6 +61,16 @@ export const searchCriteriaOptions: Record<DocType, SearchCriteriaOption[]> = {
         { value: 'amount', label: 'Amount', dataType: 'currency' },
         { value: 'invoiced', label: 'Invoiced?', dataType: 'string' },
         { value: 'paid', label: 'Paid?', dataType: 'string' },
+        { value: 'log-id', label: 'Log ID', dataType: 'number' },
+
+    ],
+    sponsorship: [
+        { value: 'sponsor-name', label: 'Sponsor Name', dataType: 'string' },
+        { value: 'club-name', label: 'Club Name', dataType: 'string' },
+        { value: 'issue-date', label: 'Issue Date', dataType: 'date' },
+        { value: 'amount', label: 'Amount', dataType: 'currency' },
+        { value: 'method-of-payment', label: 'Method of Payment', dataType: 'string' },
+        { value: 'category', label: 'Category', dataType: 'string' },
         { value: 'log-id', label: 'Log ID', dataType: 'number' },
 
     ],
