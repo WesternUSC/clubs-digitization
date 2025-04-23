@@ -7,15 +7,10 @@ import { format } from "date-fns";
 import { PDFDocument } from 'pdf-lib';  // at top of file
 import { documentMappings } from "@/data/documentMappings";
 
-let credentials: Record<string, any>;
-
-if (process.env.GOOGLE_CREDENTIALS_BASE64) {
-  credentials = JSON.parse(
-    Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, "base64").toString("utf-8")
+const credentials = JSON.parse(
+    Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64!, "base64").toString("utf-8")
   );
-} else {
-  credentials = require("@/google-service-account.json");
-}
+  
 
 
 

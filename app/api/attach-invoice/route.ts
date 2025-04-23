@@ -4,15 +4,10 @@ import { documentMappings } from "@/data/documentMappings";
 import { PDFDocument } from "pdf-lib";
 import { format } from "date-fns";
 
-let credentials: Record<string, any>;
-
-if (process.env.GOOGLE_CREDENTIALS_BASE64) {
-  credentials = JSON.parse(
-    Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, "base64").toString("utf-8")
+const credentials = JSON.parse(
+    Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64!, "base64").toString("utf-8")
   );
-} else {
-  credentials = require("@/google-service-account.json");
-}
+  
 
 // convert A → 0, B → 1, etc.
 function colToIdx(letter: string) {

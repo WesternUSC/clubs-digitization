@@ -2,15 +2,11 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { documentMappings } from '@/data/documentMappings';
-let credentials: Record<string, any>;
 
-if (process.env.GOOGLE_CREDENTIALS_BASE64) {
-  credentials = JSON.parse(
-    Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, "base64").toString("utf-8")
-  );
-} else {
-  credentials = require("@/google-service-account.json");
-}
+const credentials = JSON.parse(
+  Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64!, "base64").toString("utf-8")
+);
+
 
 // Helper: convert A -> 0, B -> 1, etc.
 function columnLetterToIndex(letter: string): number {
