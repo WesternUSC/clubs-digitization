@@ -1,10 +1,19 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
-import credentials from "@/google-service-account.json";
 import { Readable } from "stream";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { format } from "date-fns";
+
+let credentials: Record<string, any>;
+
+if (process.env.GOOGLE_CREDENTIALS_BASE64) {
+  credentials = JSON.parse(
+    Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, "base64").toString("utf-8")
+  );
+} else {
+  credentials = require("@/google-service-account.json");
+}
 
 
 export async function POST(request: NextResponse) {

@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server"
 import { google } from "googleapis"
-import credentials from "@/google-service-account.json"
 import { documentMappings } from "@/data/documentMappings"
+
+let credentials: Record<string, any>;
+
+if (process.env.GOOGLE_CREDENTIALS_BASE64) {
+  credentials = JSON.parse(
+    Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, "base64").toString("utf-8")
+  );
+} else {
+  credentials = require("@/google-service-account.json");
+}
 
 export async function POST(request: Request) {
   try {
