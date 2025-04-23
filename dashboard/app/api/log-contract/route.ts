@@ -5,7 +5,6 @@ import { Readable } from "stream";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { format } from "date-fns";
-import { PDFDocument } from 'pdf-lib';  // at top of file
 
 
 export async function POST(request: NextResponse) {
@@ -16,25 +15,16 @@ export async function POST(request: NextResponse) {
     //Extracting information from the form
     const formData = await request.formData();
 
-    const businessName = formData.get("businessName");
+    const contractParty = formData.get("contractParty");
     const clubName = formData.get("clubName");
-    const clubAccountNumber = formData.get("clubAccountNumber")
-    const poNumber = formData.get("poNumber")
-    const eventName = formData.get("eventName")
-    const issueDate = formData.get("issueDate") as string;
-    const eventDate = formData.get("eventDate") as string;
+    const contractDate = formData.get("contractDate") as string;
+    const eventActionDate = formData.get("eventActionDate") as string;
     const amount = formData.get("amount");
     const notes = formData.get("notes");
     const file: File | null = formData.get("file") as unknown as File;
-    const calendarReminder = formData.get("calendarReminder") === "true";
     const logToSheets = formData.get("logToSheets") === "true";
     const uploadToDrive = formData.get("uploadToDrive") === "true";
-    const documentCategory = formData.get("documentCategory");
     const submittedBy = formData.get("submittedBy")
-    const invoiced = formData.get("invoiced");
-    const paid = formData.get("paid")
-    const invoiceFile: File | null = formData.get("invoiceFile") as unknown as File;
-
 
     const currentTime = format(new Date(), 'MMMM dd, yyyy HH:mm:ss');
 
@@ -42,16 +32,9 @@ export async function POST(request: NextResponse) {
     const logId = Date.now().toString();
 
 
-    let reminderDate = null;
-
-
-    if (calendarReminder) {
-      reminderDate = formData.get("reminderDate");
-    }
-
-
     let driveFileUrl = "";
     let spreadsheetUrl = "";
+
 
 
     // Authenticate with Google API
@@ -68,70 +51,26 @@ export async function POST(request: NextResponse) {
     const drive = google.drive({ version: "v3", auth });
 
     // For the year, extract it from the issueDate instead of the current date.
-    const yearFromIssueDate = new Date(issueDate).getFullYear().toString();
+    const yearFromIssueDate = new Date(contractDate).getFullYear().toString();
 
     if (uploadToDrive) {
 
-      // Merge only if invoiced === "yes" and we actually have an invoiceFile
-      let mergedBuffer: Buffer;
-      if (invoiced === "Yes" && invoiceFile) {
-        const poBytes = await file.arrayBuffer();
-        const invBytes = await invoiceFile.arrayBuffer();
-        const poDoc = await PDFDocument.load(poBytes);
-        const invDoc = await PDFDocument.load(invBytes);
-        const newPdf = await PDFDocument.create();
-
-        // copy PO pages first
-        (await newPdf.copyPages(poDoc, poDoc.getPageIndices()))
-          .forEach((p) => newPdf.addPage(p));
-        // then invoice pages
-        (await newPdf.copyPages(invDoc, invDoc.getPageIndices()))
-          .forEach((p) => newPdf.addPage(p));
-
-        const mergedBytes = await newPdf.save();
-        mergedBuffer = Buffer.from(mergedBytes);
-      } else {
-        // fallback: just upload the PO PDF
-        const arrayBuffer = await file.arrayBuffer();
-        mergedBuffer = Buffer.from(arrayBuffer);
-      }
-
+      // Google Drive Integration
+      //converting the file to a buffer: 
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
       const readable = new Readable();
-      readable.push(mergedBuffer);
-      readable.push(null);    
+      readable.push(buffer);
+      readable.push(null);
 
-      const driveFolderID = process.env.PO_DRIVE_FOLDER_ID as string
-
-      // STEP 1: Find the document category folder (which is assumed to always exist)
-      async function getDocumentCategoryFolder() {
-
-
-        const res = await drive.files.list({
-          q: `'${driveFolderID}' in parents and mimeType = 'application/vnd.google-apps.folder' and name = '${documentCategory}'`,
-          fields: 'files(id, name)',
-        });
-
-        const categoryFolder = res.data.files?.[0];
-        if (!categoryFolder) {
-          console.error(`Document category folder (${documentCategory}) not found.`);
-          return null;
-        }
-        return categoryFolder.id;
-      }
-
-      const categoryFolderID = await getDocumentCategoryFolder();
-      if (!categoryFolderID) {
-        console.error('Could not retrieve the document category folder.');
-        return;
-      }
-
+      const driveFolderID = process.env.CONTRACT_DRIVE_FOLDER_ID as string
 
       // Function to check if a folder with the current year exists
       async function getOrCreateYearFolder() {
         // List folders in the parent folder
         const res = await drive.files.list({
-          q: `'${categoryFolderID}' in parents and mimeType = 'application/vnd.google-apps.folder'`,
+          q: `'${driveFolderID}' in parents and mimeType = 'application/vnd.google-apps.folder'`,
           fields: 'files(id, name)',
         });
 
@@ -146,7 +85,7 @@ export async function POST(request: NextResponse) {
           const folderMetadata = {
             name: yearFromIssueDate,
             mimeType: 'application/vnd.google-apps.folder',
-            parents: [categoryFolderID as string], // Parent folder is the root folder
+            parents: [driveFolderID as string], // Parent folder is the root folder
           };
           const folderRes = await drive.files.create({
             requestBody: folderMetadata,
@@ -166,7 +105,7 @@ export async function POST(request: NextResponse) {
 
 
       // Generate the new file name
-      const fileName = `PO_${businessName}_${issueDate}_${logId}`;
+      const fileName = `CON_${contractParty}_${contractDate}_${logId}`;
 
       // Ensure that the folder ID and file name are correct and valid
       if (!fileName || !yearFolderID) {
@@ -210,18 +149,12 @@ export async function POST(request: NextResponse) {
 
       // Google Sheets Integration
 
-      const spreadsheetId = process.env.PO_SPREADSHEET_ID;
+      const spreadsheetId = process.env.CONTRACT_SPREADSHEET_ID;
       const range = "Sheet1!A2:B";
       const getResponse = await sheets.spreadsheets.values.get({ spreadsheetId, range });
       const rows = getResponse.data.values || [];
       const nextRow = rows.length + 2;
-      let values: unknown[][];
-      
-      if(invoiced === "Yes"){
-        values = [[businessName, clubName, clubAccountNumber, poNumber, issueDate, eventDate, eventName, amount, notes, driveFileUrl, documentCategory, invoiced, paid, submittedBy, currentTime, logId, submittedBy, currentTime]];
-      } else {
-        values = [[businessName, clubName, clubAccountNumber, poNumber, issueDate, eventDate, eventName, amount, notes, driveFileUrl, documentCategory, invoiced, paid, submittedBy, currentTime, logId]];
-      }
+      const values = [[contractParty, clubName, contractDate, eventActionDate, amount, notes, driveFileUrl, submittedBy, currentTime, logId]];
 
       await sheets.spreadsheets.values.append({
         spreadsheetId,
@@ -237,37 +170,9 @@ export async function POST(request: NextResponse) {
     }
 
 
-    let reminderUrl = null;
-
-    if (calendarReminder) {
-
-      // Google Calendar Integration
-      const calendar = google.calendar({ version: "v3", auth });
-      const calendarId = process.env.CLUBS_CALENDAR_ID;
-      const event = {
-        summary: `Event Date: ${businessName as string}`,
-        start: { date: reminderDate as string },
-        end: { date: reminderDate as string },
-        description: `Notes: ${notes}\n\nFile: ${driveFileUrl}\n\nView Full Details: ${spreadsheetUrl}\n\nLog ID: ${logId}`,
-      };
-
-      const response = await calendar.events.insert({
-        calendarId,
-        requestBody: event,
-      });
-
-      reminderUrl = response.data.htmlLink; // This is the URL to the calendar event
-
-
-      console.log("Event created successfully in Calendar.");
-      console.log("Calendar event link:", reminderUrl);
-    }
-
-
 
     return NextResponse.json({
       googleDrive: driveFileUrl,
-      googleCalendar: reminderUrl,
       googleSheets: spreadsheetUrl,
     });
 

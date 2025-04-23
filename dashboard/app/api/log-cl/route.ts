@@ -106,7 +106,7 @@ export async function POST(request: NextResponse) {
 
 
       // Generate the new file name
-      const fileName = `COI_AI_${charityName}_${issueDate}_${logId}`;
+      const fileName = `CL_${charityName}_${issueDate}_${logId}`;
 
       // Ensure that the folder ID and file name are correct and valid
       if (!fileName || !yearFolderID) {

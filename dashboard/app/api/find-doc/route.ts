@@ -4,7 +4,6 @@ import { google } from 'googleapis';
 import credentials from '@/google-service-account.json';
 import { documentMappings } from '@/data/documentMappings';
 
-
 // Helper: convert A -> 0, B -> 1, etc.
 function columnLetterToIndex(letter: string): number {
   return letter.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
@@ -25,13 +24,14 @@ export async function POST(request: Request) {
     if (!mapping) {
       return NextResponse.json({ error: 'Invalid document type' }, { status: 400 });
     }
-    
+
     // locate which FieldDef corresponds to the selected criteria
     const criteriaField = mapping.fields.find(f => f.key === searchCriteria);
     if (!criteriaField) {
       return NextResponse.json({ error: 'Invalid search criteria' }, { status: 400 });
     }
 
+    // authenticate
     const auth = new google.auth.JWT(
       credentials.client_email,
       undefined,
@@ -39,21 +39,20 @@ export async function POST(request: Request) {
       ['https://www.googleapis.com/auth/spreadsheets.readonly']
     );
     await auth.authorize();
-
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // 1) Find matching rows by search column
+    // 1) Find matching row numbers
     const range = `Sheet1!${criteriaField.column}:${criteriaField.column}`;
     const colRes = await sheets.spreadsheets.values.get({ spreadsheetId: mapping.sheetId, range });
     const colValues: string[][] = colRes.data.values || [];
     const rowNums: number[] = [];
-    colValues.slice(1).forEach((r, i) => {
-      if (r[0]?.toString().toLowerCase() === searchQuery.toLowerCase()) {
-        rowNums.push(i + 2);
+    colValues.slice(1).forEach((cell, idx) => {
+      if (cell[0]?.toString().toLowerCase() === searchQuery.toLowerCase()) {
+        rowNums.push(idx + 2);
       }
     });
 
-    // 2) Fetch full rows if matches found
+    // 2) Fetch full rows if matches
     let fullRows: any[] = [];
     if (rowNums.length) {
       const ranges = rowNums.map(r => `Sheet1!A${r}:Z${r}`);
@@ -61,17 +60,23 @@ export async function POST(request: Request) {
       fullRows = batch.data.valueRanges?.map(v => v.values?.[0] ?? []) || [];
     }
 
-    // 3) Build headers: humanize each key, then "View Document"
-    const headers = mapping.fields.map(f =>
-      f.key.split('-').map(w => w[0].toUpperCase()+w.slice(1)).join(' ')
-    );
-    headers.unshift('View Document'); // always first
+    // 3) Only include fields marked for display
+    const visibleFields = mapping.fields.filter(f => f.display ?? true);
 
-    // 4) Process rows: extract each field in order, then link, but output link first
+    // 4) Build headers: humanize each key, then prepend "View Document"
+    const headers = visibleFields.map(f =>
+      f.key
+       .split('-')
+       .map(w => w[0].toUpperCase() + w.slice(1))
+       .join(' ')
+    );
+    headers.unshift('View Document');
+
+    // 5) Process rows: extract only visible fields in order
     const results = fullRows.map(row => {
-      const cells = mapping.fields.map(f => row[columnLetterToIndex(f.column)] || '');
       const driveLink = row[columnLetterToIndex(mapping.driveLinkColumn)] || '';
-      return [driveLink, ...cells];
+      const values = visibleFields.map(f => row[columnLetterToIndex(f.column)] || '');
+      return [driveLink, ...values];
     });
 
     return NextResponse.json({ headers, results });

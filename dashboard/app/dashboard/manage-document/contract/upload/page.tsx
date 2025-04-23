@@ -36,12 +36,11 @@ export default function CertificatePage() {
     const [file, setFile] = useState<File>()
 
     // State for other form inputs that were previously uncontrolled, now controlled components
-    const [charityName, setCharityName] = useState("")
-    const [charityNumber, setCharityNumber] = useState("")
+    const [contractParty, setContractParty] = useState("")
     const [clubName, setClubName] = useState("")
-    const [eventName, setEventName] = useState("")
+    const [contractDate, setContractDate] = useState("")
+    const [eventActionDate, setEventActionDate] = useState("")
     const [amount, setAmount] = useState("")
-    const [issueDate, setIssueDate] = useState("")
     const [notes, setNotes] = useState("")
 
     // State for action checkboxes to determine which actions should be performed
@@ -67,12 +66,11 @@ export default function CertificatePage() {
         const formData = new FormData()
 
         // Append basic certificate information
-        formData.append("charityName", charityName)
-        formData.append("charityNumber", charityNumber)
+        formData.append("contractParty", contractParty)
         formData.append("clubName", clubName)
-        formData.append("eventName", eventName)
         formData.append("amount", amount)
-        formData.append("issueDate", issueDate)
+        formData.append("contractDate", contractDate)
+        formData.append("eventActionDate", eventActionDate)
         formData.append("notes", notes)
 
         // Append the uploaded file
@@ -89,7 +87,7 @@ export default function CertificatePage() {
         }
 
         // Send the form data using a POST request to the specified API endpoint
-        const response = await fetch("/api/log-cl", {
+        const response = await fetch("/api/log-contract", {
             method: "POST",
             // Note: FormData automatically sets the headers so explicit "Content-Type" is not required.
             body: formData,
@@ -127,35 +125,35 @@ export default function CertificatePage() {
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
                         <BreadcrumbLink asChild>
-                            <Link href="/dashboard/manage-document/charity-letter">Charity Letter</Link>
+                            <Link href="/dashboard/manage-document/contract">Contract</Link>
                         </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
-                        <BreadcrumbPage>Upload Charity Letter</BreadcrumbPage>
+                        <BreadcrumbPage>Upload Contract</BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
 
             {/* Page Header Section */}
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Upload Charity Letter</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Upload Contract</h1>
                 <p className="text-muted-foreground">
-                    Upload a certificate document and fill in the required information
+                    Upload a contract and fill in the required information
                 </p>
             </div>
 
             {/* Card container for the certificate details form */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Certificate Details</CardTitle>
+                    <CardTitle>Contract Details</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {/* Form section, with onSubmit triggering the handleSubmit function */}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* File Upload Section */}
                         <div className="space-y-2">
-                            <Label htmlFor="document-upload">Upload Charity Letter</Label>
+                            <Label htmlFor="document-upload">Upload Contract</Label>
                             <Input
                                 id="document-upload"
                                 type="file"
@@ -168,33 +166,13 @@ export default function CertificatePage() {
 
                         {/* Charity Name Input Field */}
                         <div className="space-y-2">
-                            <Label htmlFor="charity-name">Charity Name</Label>
+                            <Label htmlFor="contract-party">Contract Party</Label>
                             <Input
-                                id="charity-name"
+                                id="contract-party"
                                 type="text"
                                 required
-                                value={charityName}
-                                onChange={(e) => setCharityName(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Charity Number Field */}
-                        <div className="space-y-2">
-                            <Label htmlFor="charity-number">Charity Number</Label>
-                            <Input
-                                id="charity-number"
-                                type="text"
-                                inputMode="decimal"
-                                pattern="^\d*\.?\d*$"
-                                required
-                                value={charityNumber}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    // Only update state if input matches a valid decimal pattern
-                                    if (/^\d*\.?\d*$/.test(val)) {
-                                        setCharityNumber(val);
-                                    }
-                                }}
+                                value={contractParty}
+                                onChange={(e) => setContractParty(e.target.value)}
                             />
                         </div>
 
@@ -209,16 +187,30 @@ export default function CertificatePage() {
                             />
                         </div>
 
-                        {/* Event Name Input Field */}
+                        {/* Contract Date Input */}
                         <div className="space-y-2">
-                            <Label htmlFor="event-name">Event Name</Label>
+                            <Label htmlFor="contract-date">Contract Date</Label>
                             <Input
-                                id="event-name"
-                                type="text"
-                                value={eventName}
-                                onChange={(e) => setEventName(e.target.value)}
+                                id="contract-date"
+                                type="date"
+                                required
+                                value={contractDate}
+                                onChange={(e) => setContractDate(e.target.value)}
                             />
                         </div>
+
+                        {/* Event/Action Date Input */}
+                        <div className="space-y-2">
+                            <Label htmlFor="event-action-date">Event/Action Date</Label>
+                            <Input
+                                id="event-action-date"
+                                type="date"
+                                required
+                                value={eventActionDate}
+                                onChange={(e) => setEventActionDate(e.target.value)}
+                            />
+                        </div>
+
 
                         {/* Amount Input with Dollar Sign Prefixed */}
                         <div className="space-y-2">
@@ -244,17 +236,6 @@ export default function CertificatePage() {
                             </div>
                         </div>
 
-                        {/* Issue Date Input */}
-                        <div className="space-y-2">
-                            <Label htmlFor="issue-date">Issue Date</Label>
-                            <Input
-                                id="issue-date"
-                                type="date"
-                                required
-                                value={issueDate}
-                                onChange={(e) => setIssueDate(e.target.value)}
-                            />
-                        </div>
 
                         {/* Notes Input Area */}
                         <div className="space-y-2">
@@ -282,7 +263,7 @@ export default function CertificatePage() {
                                     // onCheckedChange={(checked) => setLogToSheets(checked as boolean)}
                                     />
                                     <div className="grid gap-1.5 leading-none">
-                                        <Label htmlFor="log-sheets">Log charity letter details in Google Sheets.</Label>
+                                        <Label htmlFor="log-sheets">Log contract details in Google Sheets.</Label>
                                     </div>
                                 </div>
 
@@ -294,7 +275,7 @@ export default function CertificatePage() {
                                         onCheckedChange={(checked) => setUploadToDrive(checked as boolean)}
                                     />
                                     <div className="grid gap-1.5 leading-none">
-                                        <Label htmlFor="upload-drive">Upload charity letter to Google Drive.</Label>
+                                        <Label htmlFor="upload-drive">Upload contract to Google Drive.</Label>
                                     </div>
                                 </div>
 

@@ -8,7 +8,7 @@ export interface SearchCriteriaOption {
 }
 
 // 2) Your doc‑type keys
-export type DocType = 'generalCOI' | 'additionallyInsuredCOI'| 'charityLetter'; // keep this in sync
+export type DocType = 'generalCOI' | 'additionallyInsuredCOI'| 'charityLetter' | 'contract' | 'purchaseOrder'; // keep this in sync
 
 // 3) Export your map with dataType on each entry
 export const searchCriteriaOptions: Record<DocType, SearchCriteriaOption[]> = {
@@ -38,6 +38,29 @@ export const searchCriteriaOptions: Record<DocType, SearchCriteriaOption[]> = {
         { value: 'event-name', label: 'Event Name', dataType: 'string' },
         { value: 'amount', label: 'Amount', dataType: 'currency' },
         { value: 'issue-date', label: 'Issue Date', dataType: 'date' },
+        { value: 'log-id', label: 'Log ID', dataType: 'number' },
+
+    ],
+    contract: [
+        { value: 'contract-party', label: 'Contract Party', dataType: 'string' },
+        { value: 'club-name', label: 'Club Name', dataType: 'string' },
+        { value: 'contract-date', label: 'Contract Date', dataType: 'date' },
+        { value: 'event-action-date', label: 'Event/Action Date', dataType: 'date' },
+        { value: 'amount', label: 'Amount', dataType: 'currency' },
+        { value: 'log-id', label: 'Log ID', dataType: 'number' },
+
+    ],
+    purchaseOrder: [
+        { value: 'category', label: 'Category', dataType: 'string' },
+        { value: 'business-name', label: 'Business Name', dataType: 'string' },
+        { value: 'club-name', label: 'Club Name', dataType: 'string' },
+        { value: 'club-account-number', label: 'Club Account Number', dataType: 'number' },
+        { value: 'po-number', label: 'PO Number', dataType: 'number' },
+        { value: 'issue-date', label: 'Issue Date', dataType: 'date' },
+        { value: 'event-date', label: 'Event Date', dataType: 'date' },
+        { value: 'amount', label: 'Amount', dataType: 'currency' },
+        { value: 'invoiced', label: 'Invoiced?', dataType: 'string' },
+        { value: 'paid', label: 'Paid?', dataType: 'string' },
         { value: 'log-id', label: 'Log ID', dataType: 'number' },
 
     ],

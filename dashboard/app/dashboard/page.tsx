@@ -28,13 +28,19 @@ export default function DashboardPage() {
       title: "Sponsorship",
       description: "Upload and manage contract documents",
       icon: FileSpreadsheet,
-      href: "/dashboard/manage-document/contract",
+      href: "/dashboard/manage-document/sponsorship",
     },
     {
       title: "Charity Letter",
       description: "Upload and analyze report documents",
       icon: FileCheck,
       href: "/dashboard/manage-document/charity-letter",
+    },
+    {
+      title: "Contract",
+      description: "Upload and analyze report documents",
+      icon: FileCheck,
+      href: "/dashboard/manage-document/contract",
     },
   ]
 
