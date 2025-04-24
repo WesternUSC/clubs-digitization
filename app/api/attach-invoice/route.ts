@@ -124,8 +124,8 @@ export async function POST(request: Request) {
 
         // 6) load & merge with uploaded invoice
         const uploadedBuf = Buffer.from(await file.arrayBuffer());
-        const origPdf = await PDFDocument.load(origBuf);
-        const invPdf = await PDFDocument.load(uploadedBuf);
+        const origPdf = await PDFDocument.load(origBuf, { ignoreEncryption: true });
+        const invPdf  = await PDFDocument.load(uploadedBuf, { ignoreEncryption: true });
         const invPages = await origPdf.copyPages(invPdf, invPdf.getPageIndices());
         invPages.forEach(p => origPdf.addPage(p));
         const merged = await origPdf.save();
