@@ -69,10 +69,13 @@ export default function CertificatePage() {
 
   // States for email details that will be used if sendEmail is enabled
   const [vendorEmail, setVendorEmail] = useState("")
-  const [copyEmails, setCopyEmails] = useState("shari.bumpus@westernusc.ca")
-  const [emailSubject, setEmailSubject] = useState("Lorem Ipsum")
+  const baseEmail = "sthompso@uwo.ca";
+  const [copyEmails, setCopyEmails] = useState(() => {
+    const email = session?.user?.email;
+    return email && email !== baseEmail ? `${baseEmail},${email}` : baseEmail;
+  });  const [emailSubject, setEmailSubject] = useState("Lorem Ipsum")
   const [emailBody, setEmailBody] = useState(
-    "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.",
+    `Dear Preferred Vendor,\n\nHope this email finds you well.\n\nOur Clubs have enjoyed collaborating with you this past year and would like to continue working with you. Currently, the Certificate of Insurance we have on file from you has now expired. Please provide your updated certificate of insurance.\n\nWe are excited to continue working with you and thank you kindly,\nUniversity Students Council at Western University Clubs Department`,
   )
   // State for send date for the email, initially updated from expiry date
   const [sendDate, setSendDate] = useState("")
@@ -128,6 +131,11 @@ export default function CertificatePage() {
     if (session?.user?.name) {
       formData.append("submittedBy", session.user.name)
     }
+
+    if (session?.user?.email) {
+      formData.append("userEmail", session.user.email)
+    }
+
 
     // Send the form data using a POST request to the specified API endpoint
     const response = await fetch("/api/log-coi", {

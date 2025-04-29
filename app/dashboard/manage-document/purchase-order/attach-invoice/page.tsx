@@ -108,22 +108,20 @@ export default function AttachInvoiceToPOPage() {
             }
 
             const res = await fetch("/api/attach-invoice", { method: "POST", body: formData });
-            if (res.ok) {
-                const data = await res.json();
-    
-                // Save the flag and links in sessionStorage
-                sessionStorage.setItem("fromUpload", "true");
-                sessionStorage.setItem("externalLinks", JSON.stringify(data));
-    
-                // Now stop the loading
+            if (!res.ok) {
+                // extract the error message from our backend
+                const err = await res.json();
+                alert(err.error || "Failed to attach invoice.");
                 setIsSubmitting(false);
-    
-                // Redirect to success page
-                router.push(`/dashboard/manage-document/success`);
-            } else {
-                setIsSubmitting(false); // Only stop loading here if it failed
-                alert("Failed to create event.");
+                return;              // stop here on failure
             }
+            // 200: parse and continue success path
+            const data = await res.json();
+            sessionStorage.setItem("fromUpload", "true");
+            sessionStorage.setItem("externalLinks", JSON.stringify(data));
+            setIsSubmitting(false);
+            router.push(`/dashboard/manage-document/success`);
+
         } catch (err: any) {
             console.error(err);
             alert("Failed to attach invoice: " + err.message);

@@ -3,8 +3,9 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { ChevronDown, ChevronRight, Search, FileText, LogOut, Menu, Settings, X } from "lucide-react"
+import { ChevronDown, ChevronRight, Search, FileText, LogOut, Menu, Settings, ClipboardList, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSession, signOut } from "next-auth/react"
@@ -35,8 +36,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const documentTypes = [
     { name: "Certificate of Insurance", path: "/dashboard/manage-document/certificate" },
     { name: "Purchase Order", path: "/dashboard/manage-document/purchase-order" },
-    { name: "Sponsorship", path: "/dashboard/manage-document/contract" },
-    { name: "Charity Letter", path: "/dashboard/manage-document/report" },
+    { name: "Sponsorship", path: "/dashboard/manage-document/sponsorship" },
+    { name: "Charity Letter", path: "/dashboard/manage-document/charity-letter" },
+    { name: "Contract", path: "/dashboard/manage-document/contract" },
   ]
 
   const handleUploadDocumentClick = () => {
@@ -69,10 +71,16 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         {/* Sidebar header */}
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
-              <span className="text-primary-foreground font-bold">USC</span>
+          <div className="h-10 w-10 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
+              <Image
+                src="/usc-logo.png?height=40&width=40"
+                alt="Logo"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
             </div>
-            {open && <span className="font-semibold">Clubs Docs</span>}
+            {open && <span className="font-semibold">Clubs Digitization</span>}
           </div>
           <Button variant="ghost" size="icon" onClick={() => setOpen(!open)} className="md:flex hidden">
             <Menu className="h-5 w-5" />
@@ -89,7 +97,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         {/* Sidebar content */}
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="space-y-1 px-2">
-            {/* Upload Document with submenu */}
+            {/* Manage Document with submenu */}
             <div>
               <div className="flex flex-col">
                 <button
@@ -106,7 +114,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 >
                   <div className="flex items-center gap-3">
                     <FileText className="h-5 w-5" />
-                    {open && <span>Upload Document</span>}
+                    {open && <span>Manage Documents</span>}
                   </div>
                   {open && (documentsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />)}
                 </button>
@@ -146,21 +154,20 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
               )}
             </div>
 
-            {/* Find Document */}
             <Link
-              href="/dashboard/find-document"
+              href="/dashboard/records"
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                pathname === "/dashboard/find-document"
+                pathname === "/dashboard/settings"
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
               )}
             >
-              <Search className="h-5 w-5" />
-              {open && <span>Find Document</span>}
+              <ClipboardList className="h-5 w-5" />
+              {open && <span>Records & Logs</span>}
             </Link>
 
-            <Link
+            {/* <Link
               href="/dashboard/settings"
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
@@ -171,7 +178,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             >
               <Settings className="h-5 w-5" />
               {open && <span>Settings</span>}
-            </Link>
+            </Link> */}
           </nav>
         </div>
 

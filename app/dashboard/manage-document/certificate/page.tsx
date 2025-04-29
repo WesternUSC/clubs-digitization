@@ -47,10 +47,10 @@ export default function CertifcateDashboardPage() {
         },
         // New card for Editing a COI:
         // {
-        //     title: "Edit COI",
+        //     title: "Edit General COI",
         //     description: "Modify an existing certificate of insurance",
         //     icon: Edit, // imported from lucide-react
-        //     href: "/dashboard/manage-document",
+        //     href: "/dashboard/manage-document/certificate/edit-gen-coi",
         //     bgColor: "bg-amber-100",
         //     iconColor: "text-amber-600",
         // },
